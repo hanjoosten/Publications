@@ -1,4 +1,4 @@
-\documentclass{svproc}
+\documentclass{elsarticle}
 \usepackage{graphicx}
 %\usepackage{multicol}
 %\usepackage{footmisc}
@@ -12,19 +12,15 @@
 \begin{document}
 
 \title{Ampersand uses Relation Algebra as Programming Language}
-\toctitle{Ampersand uses Relation Algebra as Programming Language}
-%\titlerunning{Ampersand} % (for running head)
-\author{Stef Joosten\inst{1,}\inst{2} (0000-0001-8308-0189)}
+\author[ou,ordina]{Stef Joosten (0000-0001-8308-0189)}
 %orcid.org/0000-0001-8308-0189
-\authorrunning{Stef Joosten} % (for running head)
-\tocauthor{Stef Joosten} % for table of contents
-\institute{Open Universiteit Nederland,\\  Postbus 2960,   6401 DL Heerlen, the Netherlands\\
-\and Ordina NV,  Nieuwegein, the Netherlands\\
-\email{stef.joosten@ou.nl} % optional, same for URL of homepage
-} % end of address field
+\ead{stef.joosten@ou.nl}
+\address[ou]{Open Universiteit Nederland, Postbus 2960, 6401 DL Heerlen, the Netherlands}
+\address[ordina]{Ordina NV,  Nieuwegein, the Netherlands}
 \maketitle
 
-\abstract{Relation Algebra can be used as a programming language for building information systems.
+\begin{abstract}
+	Relation Algebra can be used as a programming language for building information systems.
 	This paper demonstrates the principle by presenting a case study together with the theory behind programming in Relation Algebra.
 	As a case study, we have developed a database-application for legal reasoning.
 	We discuss a small part of it to illustrate the mechanisms of programming in Relation Algebra.
@@ -32,8 +28,8 @@
 	The compiler that was used for this case study, Ampersand, is the result of an open source project.
 	Ampersand has been tried and tested in practice and is available as free open source software\footnote{\tt https://github.com/AmpersandTarski/Ampersand}.
 	This article is an extended version of a conference paper presented at RAMiCS-2017 \cite{Joosten2017}.
-\keywords{relation algebra, software development, legal reasoning, information systems design, Ampersand, MirrorMe, big software}
-	}
+%\keywords{relation algebra, software development, legal reasoning, information systems design, Ampersand, MirrorMe, big software}
+\end{abstract}
 
 \section{Introduction}
 \label{sct:Introduction}
@@ -1068,8 +1064,10 @@ r;s\ \subs\ (r-\Delta);(s\cup\Delta_s)\label{lbl:nonshrinking r;s when Del from 
 \label{sct:Acknowledgements}
 	Firstly, I wish to thank Sebastiaan Joosten for introducing me to Isabelle and for inspiring me with his challenging critiques.
 	I owe many thanks to Wolfram Kahl, Michiel Stornebrink, Han Joosten, and the anonymous reviewers of RAMiCS for their useful feedback.
-	And I am grateful to the Open University and Ordina for funding this research.
-\bibliographystyle{spmpsci}
+	And I am very grateful to the Open University and Ordina for funding this research.
+
+\section{Bibliography}
+\bibliographystyle{elsarticle-harv}
 \bibliography{doc}
 
 
