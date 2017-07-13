@@ -12,12 +12,11 @@
 \begin{document}
 
 \title{Ampersand uses Relation Algebra as Programming Language}
-\author[ou,ordina]{Stef Joosten (0000-0001-8308-0189)}
-%orcid.org/0000-0001-8308-0189
+\author[ou,ordina]{Stef Joosten\fnref{fn1}}
 \ead{stef.joosten@ou.nl}
 \address[ou]{Open Universiteit Nederland, Postbus 2960, 6401 DL Heerlen, the Netherlands}
 \address[ordina]{Ordina NV,  Nieuwegein, the Netherlands}
-\maketitle
+\fntext[fn1]{ORCID 0000-0001-8308-0189}
 
 \begin{abstract}
 	Relation Algebra can be used as a programming language for building information systems.
@@ -28,8 +27,12 @@
 	The compiler that was used for this case study, Ampersand, is the result of an open source project.
 	Ampersand has been tried and tested in practice and is available as free open source software\footnote{\tt https://github.com/AmpersandTarski/Ampersand}.
 	This article is an extended version of a conference paper presented at RAMiCS-2017 \cite{Joosten2017}.
-%\keywords{relation algebra, software development, legal reasoning, information systems design, Ampersand, MirrorMe, big software}
 \end{abstract}
+
+\begin{keyword}
+relation algebra\sep software development\sep legal reasoning\sep information systems design\sep Ampersand\sep MirrorMe\sep big software
+\end{keyword}
+\maketitle
 
 \section{Introduction}
 \label{sct:Introduction}
@@ -133,12 +136,14 @@
 	The pair $\pair{A}{B}$ is called the type of the relation.
 	The term $\fullt{A}{B}$ represents the \emph{universal relation} over concepts $A$ and $B$.
 
-    The meaning of relations in Ampersand is defined by an interpretation function $\mathfrak{I}$.
+	The meaning of relations in Ampersand is defined by an interpretation function $\mathfrak{I}$.
 	It maps each relation to a set of facts.
-	Furthermore, it is a run-time requirement that the pairs in $r$ are contained in its type:
+	The type system of Ampersand guarantees that each pair in $r$ is always contained in its type:
 \begin{equation}
 	\pair{a}{b}\in\ti{\declare{nm}{A}{B}} \Rightarrow\ a \in A \wedge b \in B \label{typing of relations}
 \end{equation}
+	The type system is strong, which means that every atom has a type.
+	The type system is static, which means that type checking is entirely done at compile-time.
 
 	Terms are used to combine relations using operators.
 	The set of terms is called $\terms$. It is defined by:
@@ -172,8 +177,8 @@
 	In practice, the derivation of types can disambiguate most terms.
 	So, the programmer experiences some freedom to denote distinct relations by the same name without the obligation to specify their types at all occurrences.
 	The compiler does not generate any code if there is a term that is not type correct.
-	The type function and the restrictions it suffers are discussed in~\cite{Joosten2015}.
-	However, for the remainder of this paper this is irrelevant.
+	The type function and its restrictions are discussed in~\cite{Joosten2015}
+	and have no consequences for the remainder of this paper.
 
  	The meaning of terms in Ampersand is given by an interpretation function $\mathfrak{I}$.
 	Let $A$ and $B$ be finite sets of atoms, then $\mathfrak{I}$ maps each term to the set of pairs for which that term stands.
