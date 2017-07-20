@@ -11,12 +11,12 @@ begin
 section \<open>Code Fragments\<close>
 text {*
 	Which code can preserve invariance and can we produce that code for arbitrary rules?
-  That is one of the issues addressed in a paper entitled ``Ampersand uses Relation Algebra as Programming Language''~\cite{Joosten-JLAMP2017}, which is uses the proofs documented in this paper.
+  That is one of the issues addressed in a paper entitled ``Ampersand uses Relation Algebra as Programming Language''~\cite{Joosten-JLAMP2017}, which uses the proofs documented in this paper.
 	The question how to preserve invariance of rules in relation algebra is key for deriving code from invariants.
 	The means to preserve invariance is to insert or delete a set of pairs into and from relations.
 
-	Inserting (a set of) pairs $\Delta$ into a relation $r$ yields $r\cup\Delta$.
-	Likewise, deleting pairs $\Delta$ from a relation $r$ yields $r-\Delta$.
+	Inserting (a set of) pairs @{term "\<Delta>"} into a relation @{term "r"} yields @{term "r\<union>\<Delta>"}.
+	Likewise, deleting pairs @{term "\<Delta>"} from a relation @{term "r"} yields @{term "r-\<Delta>"}.
 	The code we derive is built around the basic operations insert and delete.
 	Since rules are built with relations as bricks and operators as mortar,
 	we are wondering whether a change in on relation can be compensated by one or more changes in other relations.
@@ -51,10 +51,10 @@ lemma "39":
     
 subsection \<open>Proofs with intersection\<close>
 text {*
-	Take a term of the form $r\cap s$, which is the intersection of $r$ and $s$.
-  Suppose we insert $\Delta$ into $r$.
-	It makes us wonder what is needed in $s$ to have the entire expression return to its original value.
-  For symmetry reasons, we need not investigate insertion into $s$.
+	Take a term of the form @{term "r\<inter>s"}, which is the intersection of @{term "r"} and @{term "s"}.
+  Suppose we insert @{term "\<Delta>"} into @{term "r"}.
+	It makes us wonder what is needed in @{term "s"} to have the entire expression return to its original value.
+  For symmetry reasons, we need not investigate insertion into @{term "s"}.
 *}
 lemma "Keep r inter s constant with Del":
   assumes "\<Delta> \<inter> r \<inter> s = -UNIV"
@@ -66,9 +66,9 @@ proof-
 qed
 
 text {*
-	Take a term of the form $r\cap s$, and suppose we insert $\Delta$ into that term.
-  For symmetry reasons, we need not investigate insertion in $s$.
-	It makes us wonder what is needed in $s$ to have the entire expression return to its original value.
+	Take a term of the form @{term "r\<inter>s"}, and suppose we insert @{term "\<Delta>"} into that term.
+  For symmetry reasons, we need not investigate insertion in @{term "s"}.
+	It makes us wonder what is needed in @{term "s"} to have the entire expression return to its original value.
 *}
 lemma "Preserve r inter s on Del Delta from r":
   assumes "\<Delta> \<inter> r \<inter> s = -UNIV"
@@ -80,9 +80,9 @@ proof-
 qed
 
 text {*
-	Take a term of the form $r\cap s$, and suppose we insert $\Delta$ into $r$.
-  For symmetry reasons, we need not investigate insertion in $s$.
-	It makes us wonder what is needed in $s$ to have the entire expression return to its original value.
+	Take a term of the form @{term "r\<inter>s"}, and suppose we insert @{term "\<Delta>"} into @{term "r"}.
+  For symmetry reasons, we need not investigate insertion in @{term "s"}.
+	It makes us wonder what is needed in @{term "s"} to have the entire expression return to its original value.
 *}
 lemma "Keep r inter s constant with Ins":
   assumes "\<Delta> \<subseteq> r \<inter> s"
@@ -103,7 +103,7 @@ qed
 
 subsection \<open>Proofs with union\<close>
 text {*
-	Take a term of the form $r\cup s$, and suppose we insert or delet $\Delta$ into or from $r$ or $r\cup s$.
+	Take a term of the form @{term "r\<union>s"}, and suppose we insert or delete @{term "\<Delta>"} into or from  @{term "r"} or @{term "r\<union>s"}.
 	It makes us wonder what is needed to have the entire expression return to its original value.
 *}
 lemma "Keep r union s constant with Del":
@@ -139,7 +139,7 @@ qed
 
 subsection \<open>Proofs with relational operators\<close>
 text {*
-  This section studies how to insert or delete pairs into or from terms of the form $r;s$.
+  This section studies how to insert or delete pairs into or from terms of the form @{term "r O s"}.
   We omit proofs with left residuals because they have dual counterparts with right residuals.
 *}
 
@@ -170,7 +170,7 @@ lemma 42: (* introduce NEWPAIRS *)
     finally show ?thesis by auto
   qed
 
-lemma 44: (* Keeping $r;s$ constant when $r$ grows *)
+lemma 44: (* Keeping @{term "r O s"} constant when  @{term "r"} grows *)
   assumes defDelta: "\<Delta>\<^sub>s \<equiv> s-residual (r\<union>\<Delta>) (r O s)"
   shows "(r\<union>\<Delta>)O(s-\<Delta>\<^sub>s) \<subseteq> r O s"
 proof-
@@ -180,7 +180,7 @@ proof-
   finally show ?thesis by auto
 qed
 
-lemma 47: (* Keeping $r;s$ constant when $r$ shrinks *)
+lemma 47: (* Keeping @{term r O s"} constant when  @{term "r"} shrinks *)
   assumes defDelta: "\<Delta>\<^sub>s \<equiv> residual (r-\<Delta>) (r O s)"
       and defX: "x\<equiv>r-\<Delta>"
       and defY: "y\<equiv>r O s"
@@ -205,10 +205,11 @@ proof-
 qed
 
 text
-{*Suppose we want to keep $r;s$ constant,
-but there is an action that deletes $\Delta$ from $r$.
-The following derivation shows that $(r-\Delta) ‘ ;(r \<inter> ∆);s satisfies this require-
-ment, but on one condition: for every pair in r;s there must be a pair remaining behind in r − ∆
+{*Suppose we want to keep @{term "r O s"} constant,
+but there is an action that deletes @{term "\<Delta>"} from  @{term "r"}.
+The following derivation shows that @{term "(r - \<Delta>) O (r \<inter> \<Delta>) O s"} satisfies this requirement,
+but on one condition: for every pair in @{term "r O s"} there must be a pair remaining
+behind in @{term "r-\<Delta>"}.
 *}
 
 lemma 48:

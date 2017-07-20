@@ -26,7 +26,7 @@
 	Beside being declarative, relation algebra comes with attractive promises for developing big software.
 	The compiler that was used for this case study, Ampersand, is the result of an open source project.
 	Ampersand has been tried and tested in practice and is available as free open source software\footnote{\tt https://github.com/AmpersandTarski/Ampersand}.
-	This article is an extended version of a conference paper presented at RAMiCS-2017 \cite{Joosten2017}.
+	This article is an extended version of a conference paper presented at RAMiCS-2017 \cite{JoostenRAMiCS2017}.
 \end{abstract}
 
 \begin{keyword}
@@ -1017,6 +1017,15 @@ r;s\ \subs\ (r-\Delta);(s\cup\Delta_s)\label{lbl:nonshrinking r;s when Del from 
 	In the tradition of formal specification, there are many relational approaches, such as Z~\cite{Z}, CSP~\cite{CSP}, LOTOS~\cite{LOTOS}, VDM~\cite{VDM}.
 	Where formal specification techniques typically analyse and diagnose specifications,
 	Ampersand actually synthesizes (generates) information systems.
+
+	The similarity with the reactive programming paradigm~\cite{Bainomugisha2013} is obvious from figure~\ref{fig:event flow}.
+	This graph is part of the program graph as conceived in reactive programs.
+	The code fragments described in section~\ref{sct:Code Fragments}
+	might be generated towards a mature reactive programming language (e.g. ELM)
+	and executed directly.
+	Ampersand lets you think in constraints and (reactive) code fragments to preserve invariants can be generated with the theory in this paper.
+	Currently Ampersand generates towards classical PHP+HTML+JavaScript code,
+	but generation to a reactive programming language (e.g. ELM) is definitely on the wishlist.
 
 	If Ampersand represents a programming style at all, we might call it a relation-algebraic style of programming or maybe constraint programming\footnote{https://en.wikipedia.org/wiki/Constraint\_programming}.
 	Ampersand's style would be characterized by a programmer who specifies constraints and a computer trying to satisfy these constraints by resolving violations.
