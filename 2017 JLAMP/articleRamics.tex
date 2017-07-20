@@ -46,8 +46,19 @@ relation algebra\sep software development\sep legal reasoning\sep information sy
 	It stands in the tradition of relation algebra~\cite{Maddux06}, logic programming~\cite{Lloyd1984},
 	database application programming~\cite{Codd70}, and formal specification of software.
 	Ampersand uses these ideas to compile relation algebra to working software, an idea which is also found in RelView~\cite{Berghammer2005} by Berghammer (Univ. of Kiel).
-	Some differences with earlier programming languages are discussed in section~\ref{sct:Reflection}.
-	
+ 	Ampersand lets the user specify constraints only and generates an information system that respects these constraints.
+	RelView also generates software but uses relational algebra as operators in an otherwise imperative programming language.
+	This makes RelView stronger in specifying complex computational problems.
+	Some more differences with earlier programming languages are discussed in section~\ref{sct:Comparison}.
+
+	The author shares the belief that a provably correct implementation of requirements are essential to the software development process~\cite{Boehm1981}.
+	Being fully aware of the fate of formal methods in computer science,
+        Ampersand is nevertheless founded on relation algebra.
+	It builds further on foundations laid by formal specification methods
+	such as Z~\cite{Z} and Alloy~\cite{Alloy2006}.
+	In contrast however with such methods, Ampersand is equipped with a software generator that generates an information system.
+	Thus, specifying in Ampersand is developing software at the same time.
+
 	The user may regard Ampersand as a programming language, especially suited for designing the back-end of information systems.
 	The axioms of Tarski can be used to manipulate expressions in a way that preserves meaning~\cite{vdWoude2011}.
 	This makes Ampersand a declarative language.
@@ -822,12 +833,6 @@ r;s\cup\Delta=(r\cup \Delta_r);(s\cup \Delta_s)\label{eqn:ins delta r;s}
 	This derivation shows that every solution $\Delta_s$ contains $s-(r\cup \Delta)\backslash(r;s)$.
 	So the latter, $s-(r\cup \Delta)\backslash(r;s)$, is the smallest solution.
 
-	By using the absorption property
-\begin{equation}
-s-(s-x)=s\cap x\label{absorb x}
-\end{equation}
-	it is obvious that $(r\cup \Delta);(s\cap(r\cup \Delta)\backslash(r;s))\ \subs\ r;s$ is equivalent to equation~\ref{eqn:ins r del s}. Therefore, it yields an equivalent solution. 
-
 	The smallest solution might not contain all pairs from $r;s$.
 	The missing pairs are $r;s-(r\cup\Delta);(s-(r\cup \Delta)\backslash(r;s))$.
 	Therefore it may be necessary to reintroduce these missing pairs afterwards.
@@ -847,7 +852,6 @@ s-(s-x)=s\cap x\label{absorb x}
 \hspace{0.5in}\{\code{R};\code{S}=r;s\cup(\code{T}-\code{R};\code{S})=r;s\\
 \hspace{0.575in}\text{so }\code{R};\code{S}=\code{T}\}
 \end{array}\]
-
 
 	Let us now study how to delete pairs $\Delta$ from $r$ while keeping $r;s$ constant.
 	This involves inserting pairs into $s$ such that:
@@ -957,16 +961,23 @@ r;s\ \subs\ (r-\Delta);(s\cup\Delta_s)\label{lbl:nonshrinking r;s when Del from 
 
 \section{Reflection}
 \label{sct:Reflection}
-	Ampersand is built on the belief that software development should be automated.
-	It uses rules to represent requirements, in the firm belief that consistent requirements are essential to the software development process~\cite{Boehm1981}.
-	Being fully aware of the fate of formal methods in computer science, Ampersand is founded on the belief that software development must be done more formally.
-	So Ampersand is building further on the foundations laid by formal specification methods
-	such as Z~\cite{Z} and Alloy~\cite{Alloy2006}.
-	In contrast however with such methods, Ampersand is equipped with a software generator that generates an information system.
-	Thus, specifying in Ampersand is developing software at the same time.
-	Ampersand complements the RelView approach~\cite{Berghammer2005}, which also generates software but is stronger in specifying complex computational problems.
+	Ampersand is being built on the belief that software development should be automated.
+	The holy grail is to derive deterministic ways to preserve invariants, to allow for programming by constraints.
+	This is motivated by the benefits of describing a result in terms of constraints,
+	rather than having to invent all the steps that lead to that result.
+	For example, describing the situation that any financial transaction must preserve the total amount of money is simpler
+	than having to describe all the steps involved in such a transaction.
+	The attraction is not only for the programmer, but even more so for auditors and users for who the constraints are easier to grasp and validate.
+	This paper shows how a computer can derive certain steps,
+	helping the programmer to invent code an providing mathematical assurance of correctness (compliance-by-design).
 
-	In retrospect we see that programming in relation algebra yields an unconventional programming experience.
+	The analysis in this paper shows once more that inventing algorithms is far from trivial.
+	Algorithms cannot be derived from constraints alone. The choices that remain must be resolved first.
+	This paper does show, however, that these choices occur in predictable ways.
+	That gives opportunities, for instance to make these choices explicit to a user, to optimize the number of choices,
+	or to use external knowledge to resolve the remaining choices on runtime.
+
+	In practice we experience that programming in relation algebra yields an unconventional way of programming.
 	This experience consists of inventing rules and choosing event types for resolving violations, as illustrated by the case study.
 	To relate this experience to programming as we know it, section~\ref{sct:Comparison} makes a comparison with established programming languages (prior art).
 	Section~\ref{sct:Contribution} summarizes the contributions to software development claimed by Ampersand.
