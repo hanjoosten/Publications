@@ -48,7 +48,8 @@ lemma "38":
     
 lemma "39":
   shows "t=r\<union>s \<Longrightarrow> t\<union>\<Delta>=(r\<union>\<Delta>)\<union>s" by auto
-    
+
+(* The following is not needed in the publication in AFP, so I have commented it out.
 subsection \<open>Proofs with intersection\<close>
 text {*
 	Take a term of the form @{term "r\<inter>s"}, which is the intersection of @{term "r"} and @{term "s"}.
@@ -136,6 +137,7 @@ proof-
   also have "\<dots> = r \<union> s" using assms by auto
   finally show ?thesis by auto
 qed
+*)
 
 subsection \<open>Proofs with relational operators\<close>
 text {*
@@ -165,7 +167,7 @@ lemma 42: (* introduce NEWPAIRS *)
     have " t\<union>\<Delta> = t\<union>(\<Delta>-t)" by simp
     also have "\<dots> = r O s \<union> \<Delta>\<^sub>r O \<Delta>\<^sub>s" by (simp add: newpairs pre)
     also have "\<dots> = r O s  \<union>  r O \<Delta>\<^sub>s  \<union>  \<Delta>\<^sub>r O s  \<union>  \<Delta>\<^sub>r O \<Delta>\<^sub>s"
-    by (metis (no_types, lifting) "Keep r union s constant with Ins" Un_commute newRpairs newSpairs calculation)
+      by (smt "39" calculation newRpairs newSpairs sup.orderE sup_commute)
     also have "\<dots> = (r\<union>\<Delta>\<^sub>r) O (s\<union>\<Delta>\<^sub>s)" by auto
     finally show ?thesis by auto
   qed
