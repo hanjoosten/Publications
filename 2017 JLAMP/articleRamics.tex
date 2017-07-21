@@ -968,16 +968,16 @@ r;s\ \subs\ (r-\Delta);(s\cup\Delta_s)\label{lbl:nonshrinking r;s when Del from 
 	For example, describing the situation that any financial transaction must preserve the total amount of money is simpler
 	than having to describe all the steps involved in such a transaction.
 	The attraction is not only for the programmer, but even more so for auditors and users for who the constraints are easier to grasp and validate.
-	This paper shows how a computer can derive certain steps,
-	helping the programmer to invent code an providing mathematical assurance of correctness (compliance-by-design).
+	In this paper we have shown how to derive specific steps,
+	helping the programmer to invent code and providing mathematical assurance of correctness (compliance-by-design).
 
-	The analysis in this paper shows once more that inventing algorithms is far from trivial.
+	The analysis in this paper shows once more that inventing algorithms for preserving invariants is far from trivial.
 	Algorithms cannot be derived from constraints alone. The choices that remain must be resolved first.
 	This paper does show, however, that these choices occur in predictable ways.
 	That gives opportunities, for instance to make these choices explicit to a user, to optimize the number of choices,
 	or to use external knowledge to resolve the remaining choices on runtime.
 
-	In practice we experience that programming in relation algebra yields an unconventional way of programming.
+	In practice we have experienced that programming by constraints in relation algebra yields an unconventional way of programming.
 	This experience consists of inventing rules and choosing event types for resolving violations, as illustrated by the case study.
 	To relate this experience to programming as we know it, section~\ref{sct:Comparison} makes a comparison with established programming languages (prior art).
 	Section~\ref{sct:Contribution} summarizes the contributions to software development claimed by Ampersand.
