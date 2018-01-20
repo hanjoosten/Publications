@@ -9,6 +9,7 @@
 %\usepackage[official,right]{eurosym}
 \selectlanguage{english}
 \include{preamramics}
+\hyphenation{ExecEngine}
 \begin{document}
 
 \title{Ampersand uses Relation Algebra as Programming Language}
@@ -21,7 +22,7 @@
 \begin{abstract}
 	Relation Algebra can be used as a programming language for building information systems.
 	This paper demonstrates the principle by presenting a case study together with the theory behind programming in Relation Algebra.
-	As a case study, we have developed a database-application for legal reasoning.
+	As a case study, we have developed a database application for legal reasoning.
 	We discuss a small part of it to illustrate the mechanisms of programming in Relation Algebra.
 	Beside being declarative, relation algebra comes with attractive promises for developing big software.
 	The compiler that was used for this case study, Ampersand, is the result of an open source project.
@@ -37,26 +38,24 @@ relation algebra\sep software development\sep legal reasoning\sep information sy
 \section{Introduction}
 \label{sct:Introduction}
 	This paper investigates how relation algebra can be used as a programming language for information systems.
-	A compiler, Ampersand~\cite{Michels2011}, is used to compile concepts, relations and rules into a working database-application.
+	A compiler, Ampersand~\cite{Michels2011}, is used to compile concepts, relations and rules into a working database application.
 	Ampersand is a syntactically sugared version of heterogeneous relation algebra \cite{Schmidt1997}.
 	We present a case study to demonstrate programming in relation algebra and its impact on the software development process.
 	The case study takes the reader by the hand in the thinking process of a software developer who programs with relation algebra.
 
-	The use of relation algebra as a programming language is not new.
-	It stands in the tradition of relation algebra~\cite{Maddux06}, logic programming~\cite{Lloyd1984},
+	The use of relation algebra as a programming language is rooted in relation algebra~\cite{Maddux06}, logic programming~\cite{Lloyd1984},
 	database application programming~\cite{Codd70}, and formal specification of software.
 	Ampersand uses these ideas to compile relation algebra to working software, an idea which is also found in RelView~\cite{Berghammer2005} by Berghammer (Univ. of Kiel).
- 	Ampersand lets the user specify constraints only and generates an information system that respects these constraints.
-	RelView also generates software but uses relational algebra as operators in an otherwise imperative programming language.
+ 	In Ampersand the user specifies constraints. The compiler then generates an information system that respects these constraints.
+	RelView also generates software but uses relational algebra operators in an otherwise imperative programming language.
 	This makes RelView stronger in specifying complex computational problems.
 	Some more differences with earlier programming languages are discussed in section~\ref{sct:Comparison}.
 
-	The author shares the belief that a provably correct implementation of requirements are essential to the software development process~\cite{Boehm1981}.
-	Being fully aware of the fate of formal methods in computer science,
-        Ampersand is nevertheless founded on relation algebra.
-	It builds further on foundations laid by formal specification methods
-	such as Z~\cite{Z} and Alloy~\cite{Alloy2006}.
-	In contrast however with such methods, Ampersand is equipped with a software generator that generates an information system.
+	The author shares the conviction that a provably correct implementation of requirements is essential to the software development process~\cite{Boehm1981}.
+	Even though formal methods are not widely used in computer science,
+        Ampersand is built on formal foundations laid by specification methods such as Z~\cite{Z} and Alloy~\cite{Alloy2006}.
+	In contrast with such methods,
+	Ampersand is equipped with a software generator that generates information systems that consist of a database with user interfaces.
 	Thus, specifying in Ampersand is developing software at the same time.
 
 	The user may regard Ampersand as a programming language, especially suited for designing the back-end of information systems.
@@ -71,12 +70,14 @@ relation algebra\sep software development\sep legal reasoning\sep information sy
 	To the programmer, this offers the challenge to represent the problem of legal reasoning in relation algebra.
 	This challenge is by no means simple, but outside the scope of this paper.
 	In the Ampersand project at the Open University of the Netherlands,
-	we are studying practical and didactical issues of software development in relation algebra~\cite{Michels2015}.
+	we are studying practical and didactic issues of software development in relation algebra~\cite{Michels2015}.
 
 	The contribution of this paper is twofold.
 	The case study contributes to the idea that programming can be done in relation algebra.
 	The theory in section~\ref{sct:Code Fragments} contributes a theory to assist in preserving invariants.
-	All lemmas in this paper have been checked using the theorem prover Isabelle~\cite{Nipkow2002}.
+	Section~\ref{sct:Code Fragments} is the extension of the paper presented at RAMiCS-2017 \cite{JoostenRAMiCS2017}
+	It provides derivations of program code,
+	all of which have been checked using the theorem prover Isabelle~\cite{Nipkow2002}.
 
 	Section~\ref{sct:Ampersand} introduces Ampersand and its semantics.
 	Section~\ref{sct:Conceptual analysis} introduces part of a theory of legal reasoning,
@@ -90,17 +91,16 @@ relation algebra\sep software development\sep legal reasoning\sep information sy
 \section{Ampersand}
 \label{sct:Ampersand}
 	In this section we explain the basics of Ampersand.
-	The reader is expected to have sufficient background in relation algebra,
-	in order to understand the remainder of this paper.
+	The reader is expected to have sufficient background in relation algebra to understand the remainder of this paper.
 
-	The core of an Ampersand-script is a triple $\la\rules,\rels,\concepts\ra$,
+	The core of an Ampersand script is a triple $\la\rules,\rels,\concepts\ra$,
 	which consists of a set of rules $\rules$, relations $\rels$, and concepts $\concepts$.
-	Ampersand-scripts are interpreted by the compiler as an information system.
+	An Ampersand script is interpreted by the compiler as an information system.
 	The rules constitute a theory in heterogeneous relation algebra.
 	They constrain a body of data that resides in a database.
 
-	The Ampersand-compiler generates a database from relations in the script.
-	A database-application%
+	The Ampersand compiler generates a database from relations in the script.
+	A database application%
 \footnote{Ampersand generates an application that consists of a relational database and interface components.
 	Currently this application runs server-side on a PHP/MySQL platform and on a web-browser on the client-side.}
 	assists users to keep rules satisfied throughout the lifetime of the database. It is also generated by Ampersand.
@@ -112,10 +112,10 @@ relation algebra\sep software development\sep legal reasoning\sep information sy
 	The phase in which a user interacts with the database, is what we will refer to as \define{run-time}.
 	At run-time, Ampersand can decide which rules are satisfied by querying the database.
 	The compiler generates all software needed to keep rules satisfied at run-time.
-	If a rule is not satisfied as a result of data that has changed, that change is reverted (rolled back) to
-	preserve a state in which all rules are satisfied.
-	Changes to the database are not specified by the software developer, but generated by the compiler.
-	Rules in Ampersand are kept satisfied rather than executed directly.
+	If one of the rules is not satisfied as a result of data that has changed,
+	that change is reverted (rolled back) to the original state.
+	Either way, Ampersand ensures that all rules remain satisfied.
+	Rules in Ampersand are kept satisfied rather than being executed directly.
 	
 	Atoms are values that have no internal structure, meant to represent data elements in a database.
 	From a business perspective, atoms are used to represent concrete items of the world,
@@ -128,9 +128,9 @@ relation algebra\sep software development\sep legal reasoning\sep information sy
 	For example, you might choose to classify \atom{Peter} as a person, and \atom{074238991} as a telephone number.
         We will use variables $A$, $B$, $C$, $D$ to represent concepts.
 	The term $\ident{A}$ represents the \emph{identity relation} of concept $A$.
-	The expression $a \in A$ means that atom $a$ is an instance of concept $A$.
+	The expression $a \in A$ means that atom $a$ is an \emph{instance} of concept $A$.
 	The declaration of $A\isa B$ (pronounce: $A$ is a $B$)
-	in an Ampersand-script states that any instance of $A$ is an instance of $B$ as well.
+	in an Ampersand script states that any instance of $A$ is an instance of $B$ as well.
 	We call this {\em specialization}, but it is also known as {\em generalization} or {\em subtyping}.
 	Specialization is needed to allow statements such as: ``An orange is a fruit that ....''.
 	Specialization is not used the remainder of this paper.
@@ -147,8 +147,8 @@ relation algebra\sep software development\sep legal reasoning\sep information sy
 	The term $\fullt{A}{B}$ represents the \emph{universal relation} over concepts $A$ and $B$.
 
 	The meaning of relations in Ampersand is defined by an interpretation function $\mathfrak{I}$.
-	It maps each relation to a set of facts.
-	The type system of Ampersand guarantees that each pair in $r$ is always contained in its type:
+	It maps each relation to a set of pairs.
+	The type system of Ampersand guarantees that each pair satisfies:
 \begin{equation}
 	\pair{a}{b}\in\ti{\declare{nm}{A}{B}} \Rightarrow\ a \in A \wedge b \in B \label{typing of relations}
 \end{equation}
@@ -156,7 +156,7 @@ relation algebra\sep software development\sep legal reasoning\sep information sy
 	The type system is static, which means that type checking is entirely done at compile-time.
 
 	Terms are used to combine relations using operators.
-	The set of terms is called $\terms$. It is defined by:
+	The set of terms is called $\terms$.
 \begin{definition}[terms]
 \label{def:terms}
 \item   The set of terms, $\terms$, is the smallest set that satisfies, for all $r,s \in \terms$, $d\in\rels$ and $A,B \in \concepts$: 
@@ -224,19 +224,18 @@ relation algebra\sep software development\sep legal reasoning\sep information sy
 \begin{eqnarray}
 	\tf{\text{RULE}\ r = s}   &=&\pair{A}{B}\\
 	\tf{\text{RULE}\ r\subs s}&=&\pair{A}{B}\\
-	\ti{\text{RULE}\ r = s}   &=&\ti{\fullt{A}{B}-((s-r)\cup(r-s))}\\
-	\ti{\text{RULE}\ r\subs s}&=&\ti{\fullt{A}{B}-(r-s)}
-\end{eqnarray}
+ resolved this \end{eqnarray}
 
-	We call rule $r$ \define{satisfied} when $\ti{\text{RULE}\ r = s}\ =\ \ti{\fullt{A}{B}}$.
+	We call a rule $\text{RULE}\ r = s$ \define{satisfied} when its interpretation equals $\ti{\fullt{A}{B}}$.
 	As the population of relations used in $r$ changes with time, the satisfaction of the rule changes accordingly.
 	A software developer, who conceives these rules, must consider how to keep each one of them satisfied.
 	We call a rule \define{violated} if it is not satisfied.
 	The set $\ti{(s-r)\cup(r-s)}$ is called the \emph{violation set} of \(\text{RULE}\ r = s\).
 	To \define{resolve} violations means to change the contents of relations such that the rule is satisfied%
 \footnote{To \define{restore invariance} is sometimes used as a synonym to resolving violations.
-	To \define{preserve invariance} is sometimes used as a synonym to keeping a rule satisfied.
-	Consequently, a rule is sometimes called \define{invariant}.}.
+	To \define{preserve invariance} is sometimes used as a synonym to keeping a rule satisfied.}.
+	Consequently, such a rule may also be referred to as \define{invariant}.
+	Some ways of resolving violations are presented in section~\ref{sct:Code Fragments}.
 	Each pair in the violation set of a rule is called a violation of that rule.
 
 	The software developer must define how to resolve violations when they occur.
@@ -255,19 +254,19 @@ relation algebra\sep software development\sep legal reasoning\sep information sy
 	Toulmin's ideas have been implemented before, for example in a tool called ArguMed \cite{Verheij1999}.
 
 	Software systems that support legal arguments have been around for many decades.
-	Legal reasoning differs from logic reasoning because of the human judgments that are involved.
+	Legal reasoning differs from logical reasoning because of the human judgments that are involved.
 	Verheij~\cite{Verheij2003} distinguishes between argument assistance systems and automated reasoning systems.
 	An automated reasoning system (ARS) mimics human reasoning in an attempt to automate a decision.
 	An argument assisance system (AAS) helps its user to construct a decision.
 	The literature on legal reasoning~\cite{Lind2007} makes it quite clear why mathematical logic alone does not suffice.
 	Legal reasoning puts a human decision at the root of its notion of truth,
 	whereas mathematical logic eradicates any human influence.
-	Legal reasoning places human judgment in the core of the very notion of truth.
+	Legal reasoning places human judgment at the core of the very notion of truth.
 	For this reason, attempts to apply mathematical logic to legal judgments have had limited impact~\cite{Prakken2005}.
 	Argument assistance systems~\cite{Verheij2005} have been more successful,
 	because they respect the professional freedom of legal professionals to construct their own line of argumentation.
-	AASs offer help in many different ways.
-	They can help by looking up legal references, jurisdiction from the past, scholarly works etc.
+	They offer help in many different ways.
+	For instance by looking up legal references, jurisdiction from the past, scholarly works etc.
 	They can also help to construct and validate arguments by keeping arguments and evidence organized.
 	They can store, disclose and share legal evidence.
 
@@ -279,40 +278,37 @@ relation algebra\sep software development\sep legal reasoning\sep information sy
 	The Ampersand compiler generates a conceptual data model
 	to help the software developer to oversee all relations.
 	Even though our case study yields a model that is a bit too large for this paper,
-	figure~\ref{fig:conceptual model} gives a good impression of what it looks like.
-\begin{figure}[htb]
-\begin{center}
-  \includegraphics[scale=.23]{LogicalDataModel.pdf}
-\end{center}
-\caption{Conceptual data model}
-\label{fig:conceptual model}
-\end{figure}
+	we have printed a relevant part of it at the end of this paper in figure~\ref{fig:conceptual model}.
+	This diagram gives an impression of what it looks like.
+	It shows entities such as Statement, Argument, Binding, Template, Case, and Claim, together with their attributes.
+	Attributes are the univalent and injective relations, which Ampersand derives from the script.
+	Relations that are neither univalent nor injective are n-m relations between entities.
+	In practice, the conceptual models have shown to be readable without much explanation for experienced database developers.
 	
-	To convey the flavour of software development in relation algebra, it suffices to discuss a tiny part of the whole program.
-	Therefore, we shall discuss the part of the conceptual model that is used in the sequel.
-	The context in which a user creates arguments and reasons about them is a legal case.
-	For this reason, validity, falsehood and truth of statements are related to the case.
-	A \define{statement} is a phrase in natural language that can be either true or false.
-	An example is \stmtText{The employee, John Brown, is entitled to 50 Euros}%
-\footnote{This type of statement is typical for cases. It is valid only in the case where this particular John Brown is known.
-	In other cases, where John Brown is unknown, this statement is meaningless}.
-	In MirrorMe, a user can define a template, such as \stmtText{The employee, [emp], is entitled to [increase]}.
+\section{Programming in Relation Algebra}
+\label{sct:Programming in RA}
+	This section illustrates the execution model of Ampersand by means of an example.
+	A demonstration of this example was given at RAMiCS-2017.
+	The example covers a tiny part of the whole MirrorMe program,
+	which is enough to give a taste of software development in relation algebra.
+	The use case for this example is the substitution of placeholders in text,
+	for instance in replacing "\stmtText{The employee, [emp], is entitled to [increase]}" by
+        "\stmtText{The employee, James, is entitled to 50 Euros.}".
+	A user does such replacements when formulating arguments and reasoning with them in a legal case.
+	In MirrorMe, a user can define a template with placeholders in square brackets.
 	The strings \stmtText{[emp]} and \stmtText{[increase]} are called placeholders.
 	The reason for using placeholders is that legal rules are stated in general terms, e.g.
 	\stmtText{Every employee is entitled to an increase in salary}.
-	The user of MirrorMe will pick a legal text (from a source he trusts) and substitute parts of that text by placeholders.
-	When the facts are known, the argument can be completed by substituting placeholders by actual phrases.
-
-	It is precisely this substitution process that we have chosen to describe in this paper as a case study in
-	programming with relation algebra.
-
-\section{Programming in Relation Algebra}
-\label{sct:Programming in RA}
+	The user of MirrorMe will pick a legal text (from a source he trusts) and replace parts of that text by placeholders.
+	When the values of the placeholders are known, a statement can be made by substituting placeholders by actual phrases.
+	When all substitutions are made, a statement remains.
+	A \define{statement} is a phrase in natural language that can be either true or false.
+	A \define{binding} assigns a piece of text to a placeholder.
+	That text is the \define{phrase of} the binding and
+	also the \define{value} of the placeholder.
+	
 	At this point we have reached the core of this case study.
-	We focus on the substitution of placeholders when their values change.
-	By focusing on this tiny detail, we can discuss the mechanics ``under the hood'' of the application generated by Ampersand.
-
-	First we show how the computer solves the issue by looking at an exerpt of a log file (figure~\ref{fig:log file}).
+	First we show how the computer solves the issue by looking at an excerpt from a log file (figure~\ref{fig:log file}).
 	It shows an alternating sequence of the computer (ExecEngine) mentioning a rule,
 	followed by insert or delete actions to satisfy that rule.
 	Then we zoom in further, one rule at a time, to explain precisely what each rule looks like and how programming is done.
@@ -344,24 +340,31 @@ relation algebra\sep software development\sep legal reasoning\sep information sy
 \end{figure}
 	The log file of figure~\ref{fig:log file} has been taken from a computer that carries out the procedure to satisfy all rules.
 	The machine will only act on rules that are violated.
-	The first rule to be violated is ``signal phrase update'', in which the computer signals that something or someone has made a change
+	The first rule violated is ``signal phrase update'', in which the computer signals that something or someone has made a change
 	in relation \id{phrase}.
 	The procedure ends by doing the necessary substitutions,
 	ensuring that all statements have the actual phrase of a placeholder in their text.
 
-	Let us now study the actual rules to see how these rules cause the right actions to take place in the correct order.
+	Before looking at the actual rules,
+	let us introduce an auxiliary relation, \id{differB}, to represent bindings that must be updated:
+\[\id{differB} = \ident{Binding}\cap\id{shownPhrase};\cmpl{\ident{Phrase}};\flip{\id{phrase}}\]
+	The relation \id{phrase} links bindings to texts.
+	It contains the actual phrase of each binding.
+	This is also known as the value of a placeholder%
+\footnote{A phrase and a placeholder are linked by a pair from $\flip{\id{phrase}};\id{placeholder}$.}.
+	The relation \id{shownPhrase} links bindings to text fields in the user interface.
+	So \id{differB} contains the bindings of which the phrase differs from what is shown on the screen.
+	Whether a placeholder has been edited can be observed by comparing its shown phrase to the phrase.
+	Bindings in \id{differB} are to be updated,
+	because the value of placeholders should always correspond with the text on the screen.
+
+	Let us now study the rules to see how these rules cause the right actions to take place in the correct order.
 	We will follow the log file from figure~\ref{fig:log file} in reverse direction,
 	reasoning backwards from the result.
 
-	Whether a placeholder has been edited can be observed by comparing its new phrase to the shown phrase%
-\footnote{Note that we use the notion ``the phrase of a placeholder'' to indicate a pair from $\flip{\id{phrase}};\id{placeholder}$.}.
-	The phrase of a placeholder is kept in the relation \id{phrase}.
-	The shown phrase is kept in the relation \id{shownPhrase}.
-	The sole purpose for having the relation \id{shownPhrase} is to detect a change in \id{phrase}.
-	Let us introduce \id{differB} to represent the bindings with an updated phrase:
-\[\id{differB} = \ident{Binding}\cap\id{shownPhrase};\cmpl{\ident{Phrase}};\flip{\id{phrase}}\]
-	When the phrase of a placeholder changes,
-	that phrase must be updated in every statement in which the placeholder was used.
+	The sole purpose for having the relation \id{shownPhrase} is to detect a change
+	and propagate it as the new value of a placeholder.
+	Then, the new value of the placeholder must be propagated in every statement in which the placeholder was used.
 	That update action is specified in section~\ref{rule: substitute}.
 	Section~\ref{rule: fill shownPhrase} specifies how \id{shownPhrase} is made equal to \id{phrase},
 	after all necessary substitutions are done.
@@ -370,9 +373,8 @@ relation algebra\sep software development\sep legal reasoning\sep information sy
 \label{rule: fill shownPhrase}
 
 \[\text{RULE}\ (\ident{Binding}\cap\id{substituted}/\id{inStatement} );\id{phrase}\ \subs\ \id{shownPhrase} \]
-        This rule says that for each binding that has been substituted in every statement it is used in,
-	the \id{phrase} must be equal to the \id{shownPhrase}.
-	When violated, it is satisfied by inserting all violations into \id{shownPhrase}.
+        This rule says that far a binding with all substitutions made, the \id{phrase} must be equal to the \id{shownPhrase}.
+	When violated, the software inserts all violations into \id{shownPhrase} to satisfy the rule.
 
 \subsection{rule: substitute}
 \label{rule: substitute}
@@ -470,7 +472,7 @@ relation algebra\sep software development\sep legal reasoning\sep information sy
 	In our case study, we have reasoned with the event types: Ins $\la\id{relation}\ra$ and Del $\la\id{relation}\ra$%
 \footnote{Ins and Del are called each others duals.}.
 \begin{table}[htb]
-{\small\begin{tabular}{|l|p{3.3in}|}\hline
+{\small\begin{tabular}{|l|p{3.2in}|}\hline
 rule&event types\\ \hline
 signal phrase update&\small Ins \id{inStatement}, Ins \id{differB}, Ins \id{substituted}, Del \id{resetS}\\
 flush substitutions&\small Ins \id{inStatement}, Ins \id{resetS}, Del \id{substituted}\\
@@ -486,13 +488,6 @@ fill shownPhrase&\small Ins \id{substituted}, Del \id{inStatement}, Del \id{show
 	Recall section~\ref{sct:Programming in RA}, where the process of substitution started by updating the value of a placeholder.
 	This meant doing an insert after a delete on the relation \id{phrase}, causing the updated phrase to appear in \id{differB}.
 	That was signaled by the rule ``signal phrase update''.
-\begin{figure}[bht]
-\begin{center}
-  \includegraphics[scale=.55]{eventFlow.png}
-\end{center}
-\caption{event flow}
-\label{fig:event flow}
-\end{figure}
 	In general, the software developer must decide how to resolve violations that occur as a result of some event.
 	This can be done by choosing among the duals of the event types from table~\ref{fig:violation of rules}.
 	By systematically swapping Ins for Del and vice-versa,
@@ -502,10 +497,19 @@ fill shownPhrase&\small Ins \id{substituted}, Del \id{inStatement}, Del \id{show
         Typically, preserving invariance of a rule is done by changing (one or more) different relations than the one that caused the violations.
 	The software developer can draw a graph that contains all information from table~\ref{fig:violation of rules}
 	and the dual information.
+\begin{figure}[bht]
+\begin{center}
+  \includegraphics[scale=.55]{eventFlow.png}
+\end{center}
+\caption{event flow}
+\label{fig:event flow}
+\end{figure}
 	Figure~\ref{fig:event flow} shows part of that graph.
-	A circle represents a rule, a rectangle represents an event type, and the arrows connect them.
+	A circle represents a rule, a rectangle represents an event type, and the edges correspond to the flow of values between them.
+	The propagation of changes across the graph is initiated by the event sources (e.g., a user changing the set of pairs in a relation).
 	The software developer can work her way through the graph, to write code to resolve violations for every event type that might occur.
 	Figure~\ref{fig:event flow} shows just that part of the graph that corresponds with the case study in this article.
+	In actual programs the complete graph can be much larger.
 
 \section{Code Fragments}
 \label{sct:Code Fragments}
@@ -521,8 +525,8 @@ fill shownPhrase&\small Ins \id{substituted}, Del \id{inStatement}, Del \id{show
 	Likewise, deleting pairs $\Delta$ from a relation $r$ yields $r-\Delta$.
 	In this section we derive code for computers,
 	which is built around two basic operations: insert and delete.
-	The insert operation can be represented in terms of pre- and postconditions\footnote{this idea
-	was introduced by Floyd and Hoare~\cite{Floyd1967,Hoare1969}.
+	The insert operation can be represented in terms of pre- and postconditions\footnote{this notation
+	was conceived by Floyd and Hoare~\cite{Floyd1967,Hoare1969}.
 	It is well known for making assertions about computer programs and reasoning about them.}.
 \[\begin{array}{r@{~}l}
 &\{\text{pre: }\code{P}=p\}\\
@@ -541,7 +545,7 @@ fill shownPhrase&\small Ins \id{substituted}, Del \id{inStatement}, Del \id{show
 	Suppose the rule $\code{P}\subs\code{S}\cup\code{T}$ is to be kept satisfied by a computer,
 	and \code{P}, \code{S}, and \code{T} are variables (memory locations) in that computer,
 	which represent relations.
-	We assume that before executing any code, we have $\code{P}=p$, $\code{S}=s$, and $\code{T}=t$.
+	We assume that before executing any code, we have $\code{P}=p$, $\code{S}=s$, $\code{T}=t$ and $\code{P}\subs\code{S}\cup\code{T}$.
 	The following example shows that inserting a set of pairs, $\Delta$, in \code{P}
 	may violate the rule.
 	Inserting the same $\Delta$ in \code{S} restores invariance.
@@ -556,9 +560,7 @@ fill shownPhrase&\small Ins \id{substituted}, Del \id{inStatement}, Del \id{show
 	
 	To prove that rule $\code{P}\subs\code{S}\cup\code{T}$ is kept satisfied,
 	we must show that its value afterwards is equal to $\full$,
-	under the condition that its initial value equals $\full$.
-	The initial value is $\cmpl{p}\cup s\cup t$, which we may assume.
-	The final value is $(p\cup\Delta)\subs(s\cup\Delta)\cup t$, which must be proven equal to $\full$:
+	assuming that its initial value is $\full$.
 \[\begin{array}{cl}
 &(p\cup\Delta)\subs(s\cup\Delta)\cup t\\
 =&\\
@@ -572,7 +574,7 @@ fill shownPhrase&\small Ins \id{substituted}, Del \id{inStatement}, Del \id{show
 =&\hspace{1in}\{\full\ =\ \cmpl{p}\cup s\cup t\}\\
 &\full
 \end{array}\]
-	From this derivation we may conclude that invariance of $\code{P}\subs\code{S}\cup\code{T}$ is restored.
+	From this derivation we may conclude that invariance of $\code{P}\subs\code{S}\cup\code{T}$ is preserved.
 	From this example, we can see that $\code{INSERT }\Delta\code{ IN T}$ would have worked just as well.
 	In general, there are alternative ways of preserving invariance.
 	This calls for a systematic analysis.
@@ -585,20 +587,12 @@ fill shownPhrase&\small Ins \id{substituted}, Del \id{inStatement}, Del \id{show
 \begin{equation}
 \code{RULE }r\subs s\label{rule:r subs s}
 \end{equation}
-	Suppose an event occurs, e.g. $\Delta_r$ is inserted in $r$,
-	and a programmer must write code that preserves invariance of rule~\ref{rule:r subs s}.
-	This requires choosing a value for $\Delta_s$, such that equation~\ref{eqn:r subsRS s} holds:
-\begin{eqnarray}
-r\subs s&\Rightarrow&r\cup\Delta_r\subs s\cup \Delta_s\label{eqn:r subsRS s}
-\end{eqnarray}
-	The programmer can choose $\Delta_s=\Delta_r$, and call it just $\Delta$,
-	satisfying equation~\ref{eqn:r subs s} trivially by monotonicity of $\subs$:
+	Recall that $\subs$ is monotonous, so:
 \begin{eqnarray}
 r\subs s&\Rightarrow&r\cup\Delta\subs s\cup \Delta\label{eqn:r subs s}
 \end{eqnarray}
-	A programmer can take the antecedent of equation~\ref{eqn:r subs s}, $r\subs s$, as precondition.
-	The consequent, $r\cup\Delta\subs s\cup \Delta$, is the postcondition.
-	She then writes the following code fragment:
+	It immediately follows that inserting $\Delta$ into \code{S} is an adequate reaction to
+	an insertion of $\Delta$ into \code{R}:
 \[\begin{array}{r@{~}l}
 &\{\text{Assume $\code{R}=r$, $\code{S}=s$, and $\code{R}\subs\code{S}$}\}\\
 \code{INSERT}&\Delta\code{ INTO R};\\
@@ -606,8 +600,6 @@ r\subs s&\Rightarrow&r\cup\Delta\subs s\cup \Delta\label{eqn:r subs s}
 \code{INSERT}&\Delta\code{ INTO S}\\
 &\{\text{postcondition: $\code{R}=r\cup\Delta$, $\code{S}=s\cup\Delta$, and $\code{R}\subs\code{S}$}\}
 \end{array}\]
-	The first step, $\code{INSERT }\Delta\code{ INTO R}$, represents the event that may violate invariance of $\code{R}\subs\code{S}$.
-	The second step, $\code{INSERT }\Delta\code{ INTO S}$, represents the reaction.
 
 	A similar line of reasoning can be used for deletion as well:
 \[\begin{array}{r@{~}l}
@@ -663,86 +655,88 @@ t=r\cup s&\Rightarrow&t\cup\Delta=(r\cup\Delta)\cup s\label{lbl:Preserve t=r uni
 \code{DELETE}&\Delta\code{ FROM S}\\
 &\{\text{$\code{R}=r\cup\Delta$ and $\code{S}=s-\Delta$, so by eqn.~\ref{lbl:Preserve r = -s with Ins Delta into r} we have $\code{R}=\cmpl{\code{S}}$}\}
 \end{array}\]
-	Likewise, the reaction on a deletion will be an insertion:
-\[\begin{array}{r@{~}l}
-&\{\text{Assume $\code{R}=r$, $\code{S}=s$, and $\code{R}=\cmpl{\code{S}}$}\}\\
-\code{DELETE}&\Delta\code{ FROM R};\\
-&\{\text{$\code{R}=r-\Delta$, $\code{S}=s$, and $\code{R}=\cmpl{\code{S}}$ is not necessarily true.}\}\\
-\code{INSERT}&\Delta\code{ INTO S}\\
-&\{\code{R}=r-\Delta\text{ and }\code{S}=s\cup\Delta\text{, so by eqn.~\ref{lbl:Preserve r = -s with Del Delta from r} we have }\code{R}=\cmpl{\code{S}}\}
-\end{array}\]
-
-	Now consider equations~\ref{lbl:Preserve t=r inter s with Ins Delta into t} and~\ref{lbl:Preserve t=r union s with Del Delta from t}.
-	If \code{T} changes, both \code{R} and \code{S} must be changed accordingly.
-	Since $\cup$ and $\cap$ are associative operators, the arguments can be evaluated with no interaction between them.
-	This allows us to define a primitive, \code{ALL}, without specifying in which order it processes its arguments\footnote{... leaving room to take advantage of parallelism.}.
-	We define \code{ALL} to perform all actions from a given list:
-\[\begin{array}{r@{~}l}
-&\{\text{Assume }\forall\code{A}\in\code{AS}: (\{\id{pre}_{\code{\tiny A}}\}\ \code{A}\ \{\id{post}_{\code{\tiny A}}\})\text{ and } \id{pre}_{\code{\tiny A}} \}\\
-\code{ALL}&\ \code{AS}\\
-&\{\forall\code{A}: \id{post}_{\code{\tiny A}}\}
-\end{array}\]
-	With this primitive, we can write code for inserting pairs in \code{T},
-	using equation~\ref{lbl:Preserve t=r inter s with Ins Delta into t}:
-\[\begin{array}{r@{~}l}
-&\{\text{Assume $\code{T}=t$, $\code{R}=r$, $\code{S}=s$, and $\code{T}=\code{R}\cap\code{S}$}\}\\
-\code{INSERT}&\Delta\code{ INTO T};\\
-&\{\text{$\code{T}=t\cup\Delta$, $\code{R}=r$, $\code{S}=s$ are true, but not necessarily $\code{T}=\code{R}\cap\code{S}$}\}\\
-\code{ALL}&[\code{INSERT}\ \Delta\code{ INTO R},\code{INSERT}\ \Delta\code{ INTO S}]\\
-&\{\code{R}=r\cup\Delta\text{ and }\code{S}=s\cup\Delta\text{, so by eqn.~\ref{lbl:Preserve t=r inter s with Ins Delta into t} we have }\code{T}=\code{R}\cap\code{S}\}
-\end{array}\]
-	Similarly, we can derive code for equation~\ref{lbl:Preserve t=r union s with Del Delta from t}:
-\[\begin{array}{r@{~}l}
-&\{\text{Assume $\code{T}=t$, $\code{R}=r$, $\code{S}=s$, and $\code{T}=\code{R}\cup\code{S}$}\}\\
-\code{DELETE}&\Delta\code{ FROM T};\\
-&\{\text{$\code{T}=t-\Delta$, $\code{R}=r$, $\code{S}=s$ are true, but not necessarily $\code{T}=\code{R}\cup\code{S}$}\}\\
-\code{ALL}&[\code{DELETE}\ \Delta\code{ FROM R},\code{DELETE}\ \Delta\code{ FROM S}]\\
-&\{\code{R}=r-\Delta\text{ and }\code{S}=s-\Delta\text{, so by eqn.~\ref{lbl:Preserve t=r union s with Del Delta from t} we have }\code{T}=\code{R}\cup\code{S}\}
-\end{array}\]
-
-	In equations~\ref{lbl:Preserve t=r inter s with Del Delta from t} and~\ref{lbl:Preserve t=r union s with Ins Delta into t},
-	a choice must be made between $r$ and $s$. For that purpose we need a primitive \code{CHC} that chooses one action from a list $\code{AS}$, say $\code{A}$:
-\[\begin{array}{r@{~}l}
-&\{ (\{\id{pre}_{\code{\tiny A}}\}\ \code{A}\ \{\id{post}_{\code{\tiny A}}\})\text{ and } \id{pre}_{\code{\tiny A}} \}\\
-\code{CHC}&\ \code{AS}\\
-&\{\id{post}_{\code{\tiny A}}\}
-\end{array}\]
-	Note that this definition leaves open which term is selected.
-	The following code shows how this works out for equation~\ref{lbl:Preserve t=r inter s with Del Delta from t}:
-\[\begin{array}{r@{~}l}
-&\{\text{Assume $\code{T}=t$, $\code{R}=r$, $\code{S}=s$, and $\code{T}=\code{R}\cap\code{S}$}\}\\
-\code{DELETE}&\Delta\code{ FROM T};\\
-&\{\text{$\code{T}=t-\Delta$, $\code{R}=r$, $\code{S}=s$ are true, but not necessarily $\code{T}=\code{R}\cap\code{S}$}\}\\
-\code{CHC}&[\code{DELETE}\ \Delta\code{ FROM R},\code{DELETE}\ \Delta\code{ FROM S}]\\
-&\{\text{Either }\code{R}=r-\Delta\text{ or }\code{S}=s-\Delta\text{, so by eqn.~\ref{lbl:Preserve t=r inter s with Del Delta from t} we have }\code{T}=\code{R}\cap\code{S}\}
-\end{array}\]
-
-	The following code shows how this works out for equation~\ref{lbl:Preserve t=r union s with Ins Delta into t}:
-\[\begin{array}{r@{~}l}
-&\{\text{Assume $\code{T}=t$, $\code{R}=r$, $\code{S}=s$, and $\code{T}=\code{R}\cup\code{S}$}\}\\
-\code{INSERT}&\Delta\code{ INTO T};\\
-&\{\text{$\code{T}=t\cup\Delta$, $\code{R}=r$, $\code{S}=s$ are true, but not necessarily $\code{T}=\code{R}\cup\code{S}$}\}\\
-\code{CHC}&[\code{INSERT}\ \Delta\code{ INTO R},\code{INSERT}\ \Delta\code{ INTO S}]\\
-&\{\text{Either }\code{R}=r\cup\Delta\text{ or }\code{S}=s\cup\Delta\text{, so by eqn.~\ref{lbl:Preserve t=r union s with Ins Delta into t} we have }\code{T}=\code{R}\cup\code{S}\}
-\end{array}\]
-
-	Section~\ref{ssct:Implication Rules} treated rules of the form $\code{R}\subs\code{S}$.
-	Note that this rule can be rewritten to $\cmpl{\code{R}}\cup\code{S}=\full$.
-	Consequently, rules did not have to be treated separately.
-	We could have treated them as a special case of equations with boolean operators only.
-	In fact, every rule with boolean operators $\cup$, $\cap$, and $-$ can be rewritten as a number of rules in disjunctive normal form\footnote{%
-	Normalizing a boolean algebra is existing knowledge, and is considered outside the scope of this paper.} (DNF~\cite{davey1990}).
-	We can represent a rule in DNF informally by:
-\begin{eqnarray}
-\code{RULE }\cmpl{r_0}\cup\ldots\cup\cmpl{r_n}\cup s_0\cup\ldots\cup s_m
-\end{eqnarray}
-	or more formally by
-\begin{eqnarray}
-\full=\cmpl{\bigcap\id{antecedents}}\cup\bigcup\id{consequents}
-\end{eqnarray}
-	in which \id{antecedents} are the complemented (negative) terms and \id{consequents} are the non-complemented (positive) terms.
-
-	Summarizing, we have obtained code to preserve invariants in a boolean algebra:
+	The proofs for the following table are similar and equally simple,
+	so we omit them for the sake of brevity.
+% 	Likewise, the reaction on a deletion will be an insertion:
+% \[\begin{array}{r@{~}l}
+% &\{\text{Assume $\code{R}=r$, $\code{S}=s$, and $\code{R}=\cmpl{\code{S}}$}\}\\
+% \code{DELETE}&\Delta\code{ FROM R};\\
+% &\{\text{$\code{R}=r-\Delta$, $\code{S}=s$, and $\code{R}=\cmpl{\code{S}}$ is not necessarily true.}\}\\
+% \code{INSERT}&\Delta\code{ INTO S}\\
+% &\{\code{R}=r-\Delta\text{ and }\code{S}=s\cup\Delta\text{, so by eqn.~\ref{lbl:Preserve r = -s with Del Delta from r} we have }\code{R}=\cmpl{\code{S}}\}
+% \end{array}\]
+% 
+% 	Now consider equations~\ref{lbl:Preserve t=r inter s with Ins Delta into t} and~\ref{lbl:Preserve t=r union s with Del Delta from t}.
+% 	If \code{T} changes, both \code{R} and \code{S} must be changed accordingly.
+% 	Since $\cup$ and $\cap$ are associative operators, the arguments can be evaluated with no interaction between them.
+% 	This allows us to define a primitive, \code{ALL}, without specifying in which order it processes its arguments\footnote{... leaving room to take advantage of parallelism.}.
+% 	We define \code{ALL} to perform all actions from a given list:
+% \[\begin{array}{r@{~}l}
+% &\{\text{Assume }\forall\code{A}\in\code{AS}: (\{\id{pre}_{\code{\tiny A}}\}\ \code{A}\ \{\id{post}_{\code{\tiny A}}\})\text{ and } \id{pre}_{\code{\tiny A}} \}\\
+% \code{ALL}&\ \code{AS}\\
+% &\{\forall\code{A}: \id{post}_{\code{\tiny A}}\}
+% \end{array}\]
+% 	With this primitive, we can write code for inserting pairs in \code{T},
+% 	using equation~\ref{lbl:Preserve t=r inter s with Ins Delta into t}:
+% \[\begin{array}{r@{~}l}
+% &\{\text{Assume $\code{T}=t$, $\code{R}=r$, $\code{S}=s$, and $\code{T}=\code{R}\cap\code{S}$}\}\\
+% \code{INSERT}&\Delta\code{ INTO T};\\
+% &\{\text{$\code{T}=t\cup\Delta$, $\code{R}=r$, $\code{S}=s$ are true, but not necessarily $\code{T}=\code{R}\cap\code{S}$}\}\\
+% \code{ALL}&[\code{INSERT}\ \Delta\code{ INTO R},\code{INSERT}\ \Delta\code{ INTO S}]\\
+% &\{\code{R}=r\cup\Delta\text{ and }\code{S}=s\cup\Delta\text{, so by eqn.~\ref{lbl:Preserve t=r inter s with Ins Delta into t} we have }\code{T}=\code{R}\cap\code{S}\}
+% \end{array}\]
+% 	Similarly, we can derive code for equation~\ref{lbl:Preserve t=r union s with Del Delta from t}:
+% \[\begin{array}{r@{~}l}
+% &\{\text{Assume $\code{T}=t$, $\code{R}=r$, $\code{S}=s$, and $\code{T}=\code{R}\cup\code{S}$}\}\\
+% \code{DELETE}&\Delta\code{ FROM T};\\
+% &\{\text{$\code{T}=t-\Delta$, $\code{R}=r$, $\code{S}=s$ are true, but not necessarily $\code{T}=\code{R}\cup\code{S}$}\}\\
+% \code{ALL}&[\code{DELETE}\ \Delta\code{ FROM R},\code{DELETE}\ \Delta\code{ FROM S}]\\
+% &\{\code{R}=r-\Delta\text{ and }\code{S}=s-\Delta\text{, so by eqn.~\ref{lbl:Preserve t=r union s with Del Delta from t} we have }\code{T}=\code{R}\cup\code{S}\}
+% \end{array}\]
+% 
+% 	In equations~\ref{lbl:Preserve t=r inter s with Del Delta from t} and~\ref{lbl:Preserve t=r union s with Ins Delta into t},
+% 	a choice must be made between $r$ and $s$. For that purpose we need a primitive \code{CHC} that chooses one action from a list $\code{AS}$, say $\code{A}$:
+% \[\begin{array}{r@{~}l}
+% &\{ (\{\id{pre}_{\code{\tiny A}}\}\ \code{A}\ \{\id{post}_{\code{\tiny A}}\})\text{ and } \id{pre}_{\code{\tiny A}} \}\\
+% \code{CHC}&\ \code{AS}\\
+% &\{\id{post}_{\code{\tiny A}}\}
+% \end{array}\]
+% 	Note that this definition leaves open which term is selected.
+% 	The following code shows how this works out for equation~\ref{lbl:Preserve t=r inter s with Del Delta from t}:
+% \[\begin{array}{r@{~}l}
+% &\{\text{Assume $\code{T}=t$, $\code{R}=r$, $\code{S}=s$, and $\code{T}=\code{R}\cap\code{S}$}\}\\
+% \code{DELETE}&\Delta\code{ FROM T};\\
+% &\{\text{$\code{T}=t-\Delta$, $\code{R}=r$, $\code{S}=s$ are true, but not necessarily $\code{T}=\code{R}\cap\code{S}$}\}\\
+% \code{CHC}&[\code{DELETE}\ \Delta\code{ FROM R},\code{DELETE}\ \Delta\code{ FROM S}]\\
+% &\{\text{Either }\code{R}=r-\Delta\text{ or }\code{S}=s-\Delta\text{, so by eqn.~\ref{lbl:Preserve t=r inter s with Del Delta from t} we have }\code{T}=\code{R}\cap\code{S}\}
+% \end{array}\]
+% 
+% 	The following code shows how this works out for equation~\ref{lbl:Preserve t=r union s with Ins Delta into t}:
+% \[\begin{array}{r@{~}l}
+% &\{\text{Assume $\code{T}=t$, $\code{R}=r$, $\code{S}=s$, and $\code{T}=\code{R}\cup\code{S}$}\}\\
+% \code{INSERT}&\Delta\code{ INTO T};\\
+% &\{\text{$\code{T}=t\cup\Delta$, $\code{R}=r$, $\code{S}=s$ are true, but not necessarily $\code{T}=\code{R}\cup\code{S}$}\}\\
+% \code{CHC}&[\code{INSERT}\ \Delta\code{ INTO R},\code{INSERT}\ \Delta\code{ INTO S}]\\
+% &\{\text{Either }\code{R}=r\cup\Delta\text{ or }\code{S}=s\cup\Delta\text{, so by eqn.~\ref{lbl:Preserve t=r union s with Ins Delta into t} we have }\code{T}=\code{R}\cup\code{S}\}
+% \end{array}\]
+% 
+% 	Section~\ref{ssct:Implication Rules} treated rules of the form $\code{R}\subs\code{S}$.
+% 	Note that this rule can be rewritten to $\cmpl{\code{R}}\cup\code{S}=\full$.
+% 	Consequently, rules did not have to be treated separately.
+% 	We could have treated them as a special case of equations with boolean operators only.
+% 	In fact, every rule with boolean operators $\cup$, $\cap$, and $-$ can be rewritten as a number of rules in disjunctive normal form\footnote{%
+% 	Normalizing a boolean algebra is existing knowledge, and is considered outside the scope of this paper.} (DNF~\cite{davey1990}).
+% 	We can represent a rule in DNF informally by:
+% \begin{eqnarray}
+% \code{RULE }\cmpl{r_0}\cup\ldots\cup\cmpl{r_n}\cup s_0\cup\ldots\cup s_m
+% \end{eqnarray}
+% 	or more formally by
+% \begin{eqnarray}
+% \full=\cmpl{\bigcap\id{antecedents}}\cup\bigcup\id{consequents}
+% \end{eqnarray}
+% 	in which \id{antecedents} are the complemented (negative) terms and \id{consequents} are the non-complemented (positive) terms.
+% 
+	To preserve invariants in a boolean algebra is done as follows:
 \[\begin{array}{|l|l|l|l|}
 \hline
 \text{invariant}&\text{action}&\text{reaction}&\text{eqn.}\\ \hline
@@ -753,7 +747,7 @@ t=r\cup s&\Rightarrow&t\cup\Delta=(r\cup\Delta)\cup s\label{lbl:Preserve t=r uni
 \code{T}=\bigcap\code{TERMS}&\code{DELETE}\ \Delta\code{ FROM T}&\code{CHC }[\code{DELETE}\ \Delta\code{ FROM X}|\code{X}\in\code{TERMS}]&\ref{lbl:Preserve t=r inter s with Del Delta from t}\\
 \code{T}=\bigcup\code{TERMS}&\code{INSERT}\ \Delta\code{ INTO T}&\code{CHC }[\code{INSERT}\ \Delta\code{ INTO X}|\code{X}\in\code{TERMS}]&\ref{lbl:Preserve t=r union s with Ins Delta into t}\\ \hline
 \end{array}\]
-	Having treated the boolean operators, let us consider code that is needed when relational operators are involved.
+	So let us now turn to code that is needed when relational operators are involved.
 
 \subsection{Rules with relational operators}
 	This section studies how to insert pairs into a term $r;s$.
@@ -775,7 +769,7 @@ t=r;s\ \Rightarrow\ t\cup\Delta=(r\cup \Delta_r);(s\cup \Delta_s)\label{eqn:t su
 &t\cup(\Delta-t)\\
 =&\hspace{1in}\{t=r;s\text{ and let \code{NEWPAIRS} ensure that }\Delta_r;\Delta_s=\Delta-t\}\\
 &r;s\cup\Delta_r;\Delta_s\\
-=&\hspace{1in}\{\text{let \code{NEWPAIRS} ensure that }r;\Delta_s\subs t\cup\Delta\text{ and }\Delta_r;s\subs t\cup\Delta\}\\
+=&\hspace{1in}\{\text{let \code{NEWPAIRS} ensure: }r;\Delta_s\subs t\cup\Delta\text{ and }\Delta_r;s\subs t\cup\Delta\}\\
 &r;s\cup r;\Delta_s\cup \Delta_r;s\cup \Delta_r;\Delta_s\\
 =&\hspace{1in}\{\text{distributivity}\}\\
 &(r\cup \Delta_r);(s\cup \Delta_s)
@@ -785,7 +779,10 @@ t=r;s\ \Rightarrow\ t\cup\Delta=(r\cup \Delta_r);(s\cup \Delta_s)\label{eqn:t su
 \[\begin{array}{r@{~}l}
 &\{\code{R}=r\text{ and }\code{S}=s\text{ and }\code{DELTA}=\Delta\}\\
 \code{NEWPAIRS}&(\code{R}, \code{S}, \code{DELTA}): (\code{DELTAR}, \code{DELTAS})\\
-&\{\code{DELTAR};\code{DELTAS}=\Delta\text{ and }\code{R};\code{DELTAS}\subs r;s\cup\Delta\text{ and }\code{DELTAR};\code{S}\subs r;s\cup\Delta\}
+&\begin{array}[t]{@{}l@{}l}
+        \{&\code{DELTR};\code{DELTAS}=\Delta - r;s\text{ and }\\
+          &\code{R};\code{DELTAS}\subs r;s\cup\Delta\text{ and }\code{DELTAR};\code{S}\subs r;s\cup\Delta\}
+\end{array}
 \end{array}\]
 	The pre- and postconditions of \code{NEWPAIRS} are sufficient to satisfy equation~\ref{eqn:t subs r;s}.
 	Since $t$ does not occur in the pre- and postconditions, \code{NEWPAIRS} implements equation~\ref{eqn:ins delta r;s}:
@@ -857,17 +854,15 @@ r;s\cup\Delta=(r\cup \Delta_r);(s\cup \Delta_s)\label{eqn:ins delta r;s}
 \begin{equation}
 (r-\Delta);(s\cup\Delta_s)=r;s\label{eqn:del r ins s}
 \end{equation}
-	The largest solution of equation~\ref{eqn:del r ins s} follows from the law $x;(x\backslash y)\subs y$:
+	The largest $\Delta_s$ follows from the law $x;(x\backslash y)\subs y$ for $x=r-\Delta$ and $y=r;s$:
 \begin{eqnarray}
-&&x;(x\backslash y)\ \subs\ y\nonumber\\
-&\Leftrightarrow&\hspace{1in}\{\text{Let }x=r-\Delta\text{ and }y=r;s)\}\nonumber\\
 &&(r-\Delta);((r-\Delta)\backslash(r;s))\ \subs\ r;s\nonumber\\
-&\Leftrightarrow&\hspace{1in}\{\text{Let }\Delta_s\ =\ (r-\Delta)\backslash(r;s)\}\nonumber\\
+&\Rightarrow&\hspace{1in}\{\text{Let }\Delta_s\ =\ (r-\Delta)\backslash(r;s)\}\nonumber\\
 &&(r-\Delta);\Delta_s\ \subs\ r;s\nonumber\\
 &\Leftrightarrow&\hspace{1in}\{p;x\subs p;q\ \Leftrightarrow\ p;(q\cup x)\subs p;q\}\nonumber\\
 &&(r-\Delta);(s\cup\Delta_s)\ \subs\ r;s\nonumber
 \end{eqnarray}
-	This derivation shows that $(r-\Delta)\backslash(r;s)$, is the largest solution.
+	This derivation shows that we can choose $\Delta_s=(r-\Delta)\backslash(r;s)$ as the largest set that preserves invariant~\ref{eqn:del r ins s}.
 
 	Once again, we might not have all pairs from $r;s$,
 	so eqn.~\ref{eqn:del r ins s} needs to be completed with the missing pairs.
@@ -929,7 +924,7 @@ r;s\cup\Delta=(r\cup \Delta_r);(s\cup \Delta_s)\label{eqn:ins delta r;s}
 \end{array}\]
 	The solutions given here are far from being exhaustive.
 	We illustrate this point by giving an example.
-	Suppose we have $\code{T}\subs\code{R};\code{S}$ and action $\code{DELETE}\ \Delta\code{ FROM R}$.
+	Suppose we have invariant $\code{T}\subs\code{R};\code{S}$ and action $\code{DELETE}\ \Delta\code{ FROM R}$.
 	So the question is which pairs must be added to $s$ after pairs $\Delta$ have been removed from $r$.
 	In normal circumstances, we might just look it up in the table above, picking $\code{INSERT R}\backslash\code{T INTO S}$ as a reaction.
 	In the circumstance that initially $\code{T}=r;s$, we might reason differently.
@@ -937,8 +932,7 @@ r;s\cup\Delta=(r\cup \Delta_r);(s\cup \Delta_s)\label{eqn:ins delta r;s}
 \begin{equation}
 r;s\ \subs\ (r-\Delta);(s\cup\Delta_s)\label{lbl:nonshrinking r;s when Del from r}
 \end{equation}
-	The following derivation shows that $\flip{(r-\Delta)};(r\cap\Delta);s$ satisfies this requirement,
-	but on one condition: for every pair in $r;s$ there must be a pair remaining behind in $r-\Delta$.
+	The following derivation shows that $\flip{(r-\Delta)};(r\cap\Delta);s$ satisfies this requirement conditionally.
 	Here is the derivation:
 \begin{eqnarray}
 &&\flip{(r-\Delta)};(r\cap\Delta);s\ \subs\ \Delta_s\nonumber\\
@@ -957,11 +951,15 @@ r;s\ \subs\ (r-\Delta);(s\cup\Delta_s)\label{lbl:nonshrinking r;s when Del from 
 \end{eqnarray}
 	This derivation justifies the reaction $\code{INSERT }\flip{(r-\Delta)};(r\cap\Delta);s\code{ INTO S}$,
 	but only if $r;s;\flip{s};\flip{r} \cap\iden\ \ \subs\ (r-\Delta);\flip{(r-\Delta)}$.
+	The part $r;s;\flip{s};\flip{r}$ is not necessary in this proof, but it is useful in practice.
+	It says that $r-\Delta$ must contain a pair for every element in the domain of $r;s$,
+	instead of every element in $I$.
+	This makes this result applicable in more situations.
 
 \section{Reflection}
 \label{sct:Reflection}
-	Ampersand is being built on the belief that software development should be automated.
-	The holy grail is to derive deterministic ways to preserve invariants, to allow for programming by constraints.
+	Ampersand is being built to automate software development.
+	The holy grail is to derive deterministic ways to preserve invariants, to allow programming by constraints.
 	This is motivated by the benefits of describing a result in terms of constraints,
 	rather than having to invent all the steps that lead to that result.
 	For example, describing the situation that any financial transaction must preserve the total amount of money is simpler
@@ -974,11 +972,11 @@ r;s\ \subs\ (r-\Delta);(s\cup\Delta_s)\label{lbl:nonshrinking r;s when Del from 
 	Algorithms cannot be derived from constraints alone. The choices that remain must be resolved first.
 	This paper does show, however, that these choices occur in predictable ways.
 	That gives opportunities, for instance to make these choices explicit to a user, to optimize the number of choices,
-	or to use external knowledge to resolve the remaining choices on runtime.
+	or to use external knowledge to resolve the remaining choices at run time.
 
 	In practice we have experienced that programming by constraints in relation algebra yields an unconventional way of programming.
 	This experience consists of inventing rules and choosing event types for resolving violations, as illustrated by the case study.
-	To relate this experience to programming as we know it, section~\ref{sct:Comparison} makes a comparison with established programming languages (prior art).
+	To relate this experience to programming as we know it, section~\ref{sct:Comparison} makes a comparison with established programming languages.
 	Section~\ref{sct:Contribution} summarizes the contributions to software development claimed by Ampersand.
 	Section~\ref{sct:Ampersand in practice} summarizes the use of Ampersand in practice and
 	section~\ref{sct:Further Research} gives an outlook on research that is required in the near future.
@@ -987,43 +985,52 @@ r;s\ \subs\ (r-\Delta);(s\cup\Delta_s)\label{lbl:nonshrinking r;s when Del from 
 \label{sct:Comparison}
 	This section compares Ampersand with existing programming paradigms by mentioning the most important differences and similarities.
 
-	The first to compare with is the imperative programming paradigm, known from popular languages such as Java~\cite{Java} and C++~\cite{Stroustrup97a}.
-	Our case study cannot be called imperative, because the notion of control flow in imperative languages is very different.
-	In imperative languages, the control flow is defined by the software developer.
-	In this case study, the control flow emerges as a result of changes in relation content as illustrated
+	The first to compare with is the object oriented programming paradigm, known from popular languages such as Java~\cite{Java} and C++~\cite{Stroustrup97a}.
+	Ampersand cannot be called object oriented, because the notion of control flow in object oriented languages is very different.
+	In those languages, the threads in the control flow are controlled by the software developer.
+	As shown in our case study, the control flow in an Ampersand script emerges as a result of changes in relation content as illustrated
 	by figure~\ref{fig:event flow}.
 
-	The case study also differs from the logic programming paradigm of Prolog~\cite{Lloyd1984} and of all rule engines that can be considered to be an offspring of Prolog.
+	Ampersand also differs from the logic programming paradigm of Prolog~\cite{Lloyd1984}
+	and of all rule engines that can be considered to be offspring of Prolog.
 	A difference lies in the way rules are interpreted.
-	In logic programming, a program consists of Horn-clauses and a resolution-proof is constructed on run-time.
+	In logic programming, a program consists of Horn-clauses and a resolution-proof is constructed at run time.
 	The software developer works with notions such as backtracking (backward chaining) and unification, which are absent in Ampersand.
-	Ampersand is not restricted to Horn-clauses; any relation-algebraic equation over relations can be used as a rule.
+	On the other hand, Ampersand is not restricted to implications with one predicate on the consequent side, as Prolog does.
+        Ampersand allows rules, which are equations with arbitrary relational expressions on either side of the equals sign.
 
-	The case study also differs from functional programming, of which Haskell and Scala are prominent representants.
+	Ampersand also differs from functional programming, of which Haskell and Scala are prominent representants.
 	A core idea in functional programming is to evaluate a program as a function from input to output~\cite{Backus1978}.
-	A functional program consists of function definitions, that are evaluated by a term- or graph-rewriter, using various strategies such as lazy or eager evaluation.
-	In contrast, one might interpret our case study as a relaxation of the constraint that everything is a function.
+	A functional program consists of function definitions, that are evaluated by a term- or graph-rewriter,
+	using various strategies such as lazy or eager evaluation.
+	In contrast, our case study illustrates that not everything has to be a function.
 	In relation algebra, everything is a relation and a function is a restricted form of a relation.
-	A similarity to functional programming is the declarative style, because substitution of equal terms without changing the semantics is a property we see in both worlds.
+	A similarity to functional programming is shown by the declarative style,
+	because substitution of equal terms without changing the semantics is a property we see in both worlds.
 
 	A difference with database programming is found in the type of algebra that is used.
-	Relational databases are founded on relational algebra~\cite{Codd70}. They are typically programmed in SQL.
-	In contrast with database programming, Ampersand implements heterogeneous relation algebra~\cite{Schmidt1997}.
-	A software developer working with relational algebra sees n-ary tables, while Ampersand is restricted to binary relations.
-	The comparison between relation{\it al} algebra and relation algebra might relate to comparing relational databases with graph databases~\cite{Vicknair2010},
-	although no literature was found to corroborate this.
+	Conventional databases are typically programmed in SQL, which is based on n-ary relations in relational algebra~\cite{Codd70}.
+	In contrast, Ampersand uses binary relations%
+\footnote{At runtime, Ampersand uses the efficiency of n-ary tables. It does so by translating relation algebra to efficient SQL-code by avoiding as many joins as possible.}
+	based on heterogeneous relation algebra~\cite{Schmidt1997}.
+	In this comparison, Ampersand is closer to graph databases~\cite{Vicknair2010} than to relational databases.
 
 	In the tradition of formal specification, there are many relational approaches, such as Z~\cite{Z}, CSP~\cite{CSP}, LOTOS~\cite{LOTOS}, VDM~\cite{VDM}.
 	Where formal specification techniques typically analyse and diagnose specifications,
 	Ampersand actually synthesizes (generates) information systems.
 
-	The similarity with the reactive programming paradigm~\cite{Bainomugisha2013} is obvious from figure~\ref{fig:event flow}.
-	This graph is part of the program graph as conceived in reactive programs.
-	The code fragments described in section~\ref{sct:Code Fragments}
-	might be generated towards a mature reactive programming language and executed directly.
-	Ampersand lets you think in constraints and (reactive) code fragments to preserve invariants can be generated with the theory in this paper.
-	Currently Ampersand generates towards classical PHP+HTML+JavaScript code,
-	but generation to a reactive programming language is definitely on the wishlist.
+	The similarity with the reactive programming paradigm is obvious from figure~\ref{fig:event flow}.
+	This graph is part of the dependency graph, which is a familiar phenomenon in reactive programming.
+	Ampersand may be seen as a reactive programming language on binary relations.
+	It has a unidirectional push based evaluation model, static typing, implicit lifting, and glitch avoidance~\cite{Bainomugisha2013}.
+	Even though Ampersand generates code to execute scripts,
+	code fragments described in section~\ref{sct:Code Fragments}
+	might just as well be generated towards a mature reactive programming language and executed there%
+\footnote{Currently Ampersand generates towards classical PHP+HTML+JavaScript code,
+	but generation to a mature reactive programming language is definitely on the wishlist.}.
+	A distinguishing feature of Ampersand is that it treats constraints (rules) as its central notion,
+	which is also seen in TBAG~\cite{Elliott94} and FHM~\cite{Giorgidze2011} but not common in most reactive programming languages.
+	In the author's opinion a constraint based approach is preferrable, because the correctness of a program is within closer range.
 
 	If Ampersand represents a programming style at all, we might call it a relation-algebraic style of programming or maybe constraint programming\footnote{https://en.wikipedia.org/wiki/Constraint\_programming}.
 	Ampersand's style would be characterized by a programmer who specifies constraints and a computer trying to satisfy these constraints by resolving violations.
@@ -1052,8 +1059,7 @@ r;s\ \subs\ (r-\Delta);(s\cup\Delta_s)\label{lbl:nonshrinking r;s when Del from 
 	Research~\cite{Michels2015} shows that this is largely due to deficits in prerequisite knowledge, especially skills in discrete mathematics.
 %	For this reason, we have made an addendum to the course we teach at the Open University of the Netherlands.
 	Also, programming appears to be difficult in practice.
-	Ongoing research is being conducted to find better ways for learning,
-	which is necessary for large scale use.
+	Ongoing research tries to find better ways for learning, which is necessary for large scale use.
 
 \subsection{Ampersand in Practice}
 \label{sct:Ampersand in practice}
@@ -1078,8 +1084,8 @@ r;s\ \subs\ (r-\Delta);(s\cup\Delta_s)\label{lbl:nonshrinking r;s when Del from 
 \label{sct:Further Research}
 	Further research on this topic is required to bring relation algebra still closer to the community of practitioners.
 	Further use of relation algebra can be made by incorporating a model checker, such as the Alloy analyser~\cite{Alloy2006}, to detect inconsistent rules.
-	An exciting new development is Amperspiegel~\cite{Amperspiegel}, which brings notational flexibility at the fingertips of the user.
-	Developments in the Ampersand-compiler are going towards a rule-repository (written in Ampersand itself).
+	An exciting new development is Amperspiegel~\cite{Amperspiegel}, which brings notational flexibility to the fingertips of the user.
+	Developments in the Ampersand compiler are going towards a rule-repository (written in Ampersand itself).
 	This will make collaborative information systems development in Ampersand easier, because the repository can assist in automating
 	the software development process further.
 	Other research is needed towards a comprehensive theory of information systems.
@@ -1090,6 +1096,14 @@ r;s\ \subs\ (r-\Delta);(s\cup\Delta_s)\label{lbl:nonshrinking r;s when Del from 
 	Firstly, I wish to thank Sebastiaan Joosten for introducing me to Isabelle and for inspiring me with his challenging critiques.
 	I owe many thanks to Wolfram Kahl, Michiel Stornebrink, Han Joosten, and the anonymous reviewers of RAMiCS for their useful feedback.
 	And I am very grateful to the Open University and Ordina for funding this research.
+
+\begin{figure}[htb]
+\begin{center}
+  \includegraphics[angle=90,scale=.357]{LogicalDataModel.pdf}
+\end{center}
+\caption{Conceptual data model (from section~\ref{sct:Conceptual analysis})}
+\label{fig:conceptual model}
+\end{figure}
 
 \section{Bibliography}
 \bibliographystyle{elsarticle-harv}
