@@ -76,8 +76,7 @@ relation algebra\sep software development\sep legal reasoning\sep information sy
 	The contribution of this paper is twofold.
 	The case study contributes to the idea that programming can be done in relation algebra.
 	The theory in section~\ref{sct:Code Fragments} contributes a theory to assist in preserving invariants.
-	That theory has been consolidated in the Archive of Formal Proofs\footnote{https://www.isa-afp.org/}~\cite{Joosten-AFP17}.
-	All proofs upon which this paper is based have been checked using the theorem prover Isabelle~\cite{Nipkow2002}.
+	All lemmas in this paper have been checked using the theorem prover Isabelle~\cite{Nipkow2002}.
 
 	Section~\ref{sct:Ampersand} introduces Ampersand and its semantics.
 	Section~\ref{sct:Conceptual analysis} introduces part of a theory of legal reasoning,
@@ -652,7 +651,7 @@ t=r\cup s&\Rightarrow&t-\Delta=(r-\Delta)\cup(s-\Delta)\label{lbl:Preserve t=r u
 t=r\cap s&\Rightarrow&t-\Delta=(r-\Delta)\cap s\label{lbl:Preserve t=r inter s with Del Delta from t}\\
 t=r\cup s&\Rightarrow&t\cup\Delta=(r\cup\Delta)\cup s\label{lbl:Preserve t=r union s with Ins Delta into t}
 \end{eqnarray}
-	In proof assistant Isabelle, the proof of each of these lemmas is made in zero steps, so we omit these proofs here.
+	In proof assistant Isabelle, these lemmas are proven in zero steps, so we omit these proofs here.
 
 	Equations~\ref{lbl:Preserve r = -s with Ins Delta into r} and~\ref{lbl:Preserve r = -s with Del Delta from r}
 	show that insertion in a term means deletion from its complement and vice versa.
@@ -1021,11 +1020,10 @@ r;s\ \subs\ (r-\Delta);(s\cup\Delta_s)\label{lbl:nonshrinking r;s when Del from 
 	The similarity with the reactive programming paradigm~\cite{Bainomugisha2013} is obvious from figure~\ref{fig:event flow}.
 	This graph is part of the program graph as conceived in reactive programs.
 	The code fragments described in section~\ref{sct:Code Fragments}
-	might be generated towards a mature reactive programming language (e.g. ELM)
-	and executed directly.
+	might be generated towards a mature reactive programming language and executed directly.
 	Ampersand lets you think in constraints and (reactive) code fragments to preserve invariants can be generated with the theory in this paper.
 	Currently Ampersand generates towards classical PHP+HTML+JavaScript code,
-	but generation to a reactive programming language (e.g. ELM) is definitely on the wishlist.
+	but generation to a reactive programming language is definitely on the wishlist.
 
 	If Ampersand represents a programming style at all, we might call it a relation-algebraic style of programming or maybe constraint programming\footnote{https://en.wikipedia.org/wiki/Constraint\_programming}.
 	Ampersand's style would be characterized by a programmer who specifies constraints and a computer trying to satisfy these constraints by resolving violations.
@@ -1039,8 +1037,8 @@ r;s\ \subs\ (r-\Delta);(s\cup\Delta_s)\label{lbl:nonshrinking r;s when Del from 
 	It also means that the order in which rules are written has no consequence for their semantics.
 \item	Heterogeneous relation algebra has a straightforward interpretation in natural language~\cite{RBD}.
 	We have used that to formalize business requirements without exposing business stakeholders to any formal notation.
-\item	Heterogeneous relation algebra in Ampersand is statically typed~\cite{Joosten2015}.
-	There is much evidence for significantly lower software maintenance cost due to static typing as opposed to dynamic typing~\cite{HanenbergKRTS14,Petersen2014}.
+\item	Ampersand is statically typed~\cite{Joosten2015}, which is an obvious consequence of being heterogeneous.
+	There is much evidence that static typing yields significantly lower software maintenance cost as opposed to dynamic typing~\cite{HanenbergKRTS14,Petersen2014}.
 \item	Heterogeneous relation algebra is well studied.
 	As a consequence, many tools that are readily available in the public domain can be put to good use.
 	For executives of large organizations it can be reassuring that the formalism is free of childhood diseases.
@@ -1050,10 +1048,12 @@ r;s\ \subs\ (r-\Delta);(s\cup\Delta_s)\label{lbl:nonshrinking r;s when Del from 
 \footnote{This is (unsubstantiated) experience collected from projects we have done with Ampersand.}.
 \end{itemize}
 
-	Ampersand also has disadvantages. It appears to be difficult to learn for large groups of software professionals.
+	Ampersand also has a disadvantage. It appears to be difficult to learn for large groups of software professionals.
 	Research~\cite{Michels2015} shows that this is largely due to deficits in prerequisite knowledge, especially skills in discrete mathematics.
 %	For this reason, we have made an addendum to the course we teach at the Open University of the Netherlands.
 	Also, programming appears to be difficult in practice.
+	Ongoing research is being conducted to find better ways for learning,
+	which is necessary for large scale use.
 
 \subsection{Ampersand in Practice}
 \label{sct:Ampersand in practice}
