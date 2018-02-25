@@ -1,4 +1,4 @@
-\documentclass{svproc}
+\documentclass{elsarticle}
 \usepackage{graphicx}
 %\usepackage{multicol}
 %\usepackage{footmisc}
@@ -12,28 +12,27 @@
 \begin{document}
 
 \title{Ampersand uses Relation Algebra as Programming Language}
-\toctitle{Ampersand uses Relation Algebra as Programming Language}
-%\titlerunning{Ampersand} % (for running head)
-\author{Stef Joosten\inst{1,}\inst{2} (0000-0001-8308-0189)}
-%orcid.org/0000-0001-8308-0189
-\authorrunning{Stef Joosten} % (for running head)
-\tocauthor{Stef Joosten} % for table of contents
-\institute{Open Universiteit Nederland,\\  Postbus 2960,   6401 DL Heerlen, the Netherlands\\
-\and Ordina NV,  Nieuwegein, the Netherlands\\
-\email{stef.joosten@ou.nl} % optional, same for URL of homepage
-} % end of address field
-\maketitle
+\author[ou,ordina]{Stef Joosten\fnref{fn1}}
+\ead{stef.joosten@ou.nl}
+\address[ou]{Open Universiteit Nederland, Postbus 2960, 6401 DL Heerlen, the Netherlands}
+\address[ordina]{Ordina NV,  Nieuwegein, the Netherlands}
+\fntext[fn1]{ORCID 0000-0001-8308-0189}
 
-\abstract{Relation Algebra can be used as a programming language for building information systems.
+\begin{abstract}
+	Relation Algebra can be used as a programming language for building information systems.
 	This paper demonstrates the principle by presenting a case study together with the theory behind programming in Relation Algebra.
 	As a case study, we have developed a database-application for legal reasoning.
 	We discuss a small part of it to illustrate the mechanisms of programming in Relation Algebra.
 	Beside being declarative, relation algebra comes with attractive promises for developing big software.
 	The compiler that was used for this case study, Ampersand, is the result of an open source project.
 	Ampersand has been tried and tested in practice and is available as free open source software\footnote{\tt https://github.com/AmpersandTarski/Ampersand}.
-	This article is an extended version of a conference paper presented at RAMiCS-2017 \cite{Joosten2017}.
-\keywords{relation algebra, software development, legal reasoning, information systems design, Ampersand, MirrorMe, big software}
-	}
+	This article is an extended version of a conference paper presented at RAMiCS-2017 \cite{JoostenRAMiCS2017}.
+\end{abstract}
+
+\begin{keyword}
+relation algebra\sep software development\sep legal reasoning\sep information systems design\sep Ampersand\sep MirrorMe\sep big software
+\end{keyword}
+\maketitle
 
 \section{Introduction}
 \label{sct:Introduction}
@@ -47,8 +46,19 @@
 	It stands in the tradition of relation algebra~\cite{Maddux06}, logic programming~\cite{Lloyd1984},
 	database application programming~\cite{Codd70}, and formal specification of software.
 	Ampersand uses these ideas to compile relation algebra to working software, an idea which is also found in RelView~\cite{Berghammer2005} by Berghammer (Univ. of Kiel).
-	Some differences with earlier programming languages are discussed in section~\ref{sct:Reflection}.
-	
+ 	Ampersand lets the user specify constraints only and generates an information system that respects these constraints.
+	RelView also generates software but uses relational algebra as operators in an otherwise imperative programming language.
+	This makes RelView stronger in specifying complex computational problems.
+	Some more differences with earlier programming languages are discussed in section~\ref{sct:Comparison}.
+
+	The author shares the belief that a provably correct implementation of requirements are essential to the software development process~\cite{Boehm1981}.
+	Being fully aware of the fate of formal methods in computer science,
+        Ampersand is nevertheless founded on relation algebra.
+	It builds further on foundations laid by formal specification methods
+	such as Z~\cite{Z} and Alloy~\cite{Alloy2006}.
+	In contrast however with such methods, Ampersand is equipped with a software generator that generates an information system.
+	Thus, specifying in Ampersand is developing software at the same time.
+
 	The user may regard Ampersand as a programming language, especially suited for designing the back-end of information systems.
 	The axioms of Tarski can be used to manipulate expressions in a way that preserves meaning~\cite{vdWoude2011}.
 	This makes Ampersand a declarative language.
@@ -137,12 +147,14 @@
 	The pair $\pair{A}{B}$ is called the type of the relation.
 	The term $\fullt{A}{B}$ represents the \emph{universal relation} over concepts $A$ and $B$.
 
-    The meaning of relations in Ampersand is defined by an interpretation function $\mathfrak{I}$.
+	The meaning of relations in Ampersand is defined by an interpretation function $\mathfrak{I}$.
 	It maps each relation to a set of facts.
-	Furthermore, it is a run-time requirement that the pairs in $r$ are contained in its type:
+	The type system of Ampersand guarantees that each pair in $r$ is always contained in its type:
 \begin{equation}
 	\pair{a}{b}\in\ti{\declare{nm}{A}{B}} \Rightarrow\ a \in A \wedge b \in B \label{typing of relations}
 \end{equation}
+	The type system is strong, which means that every atom has a type.
+	The type system is static, which means that type checking is entirely done at compile-time.
 
 	Terms are used to combine relations using operators.
 	The set of terms is called $\terms$. It is defined by:
@@ -176,8 +188,8 @@
 	In practice, the derivation of types can disambiguate most terms.
 	So, the programmer experiences some freedom to denote distinct relations by the same name without the obligation to specify their types at all occurrences.
 	The compiler does not generate any code if there is a term that is not type correct.
-	The type function and the restrictions it suffers are discussed in~\cite{Joosten2015}.
-	However, for the remainder of this paper this is irrelevant.
+	The type function and its restrictions are discussed in~\cite{Joosten2015}
+	and have no consequences for the remainder of this paper.
 
  	The meaning of terms in Ampersand is given by an interpretation function $\mathfrak{I}$.
 	Let $A$ and $B$ be finite sets of atoms, then $\mathfrak{I}$ maps each term to the set of pairs for which that term stands.
@@ -665,58 +677,53 @@ t=r\cup s&\Rightarrow&t\cup\Delta=(r\cup\Delta)\cup s\label{lbl:Preserve t=r uni
 	If \code{T} changes, both \code{R} and \code{S} must be changed accordingly.
 	Since $\cup$ and $\cap$ are associative operators, the arguments can be evaluated with no interaction between them.
 	This allows us to define a primitive, \code{ALL}, without specifying in which order it processes its arguments\footnote{... leaving room to take advantage of parallelism.}.
-	We define \code{ALL} to perform an action on any number of terms:
+	We define \code{ALL} to perform all actions from a given list:
 \[\begin{array}{r@{~}l}
-&\{\text{Assume }\forall\code{X}\in\code{TERMS}:\code{X}=x\}\\
-\code{ALL}&(\lambda\ x.\code{P}(x))\ \code{TERMS}\\
-&\{\forall\code{X}\in\code{TERMS}:\code{X}=\code{P}(x)\}
+&\{\text{Assume }\forall\code{A}\in\code{AS}: (\{\id{pre}_{\code{\tiny A}}\}\ \code{A}\ \{\id{post}_{\code{\tiny A}}\})\text{ and } \id{pre}_{\code{\tiny A}} \}\\
+\code{ALL}&\ \code{AS}\\
+&\{\forall\code{A}: \id{post}_{\code{\tiny A}}\}
 \end{array}\]
 	With this primitive, we can write code for inserting pairs in \code{T},
 	using equation~\ref{lbl:Preserve t=r inter s with Ins Delta into t}:
 \[\begin{array}{r@{~}l}
 &\{\text{Assume $\code{T}=t$, $\code{R}=r$, $\code{S}=s$, and $\code{T}=\code{R}\cap\code{S}$}\}\\
 \code{INSERT}&\Delta\code{ INTO T};\\
-&\{\text{$\code{T}=t\cup\Delta$, $\code{R}=r$, $\code{S}=s$ are true, but not necessarily $\code{T}=\code{R}\cap\code{S}$,}\\
-&~~\text{now let us assume }\forall\code{X}\in\{\code{R},\code{S}\}:\code{X}=x\}\\
-\code{ALL}&(\lambda\ x.\code{INSERT}\ \Delta\code{ INTO }x)\ [\code{R},\code{S}]\\
-&\{\forall\code{X}\in\{\code{R},\code{S}\}:\code{X}=x\cup\Delta\\
-&~~\text{so }\code{R}=r\cup\Delta\text{ and }\code{S}=s\cup\Delta\text{, so by eqn.~\ref{lbl:Preserve t=r inter s with Ins Delta into t} we have }\code{T}=\code{R}\cap\code{S}\}
+&\{\text{$\code{T}=t\cup\Delta$, $\code{R}=r$, $\code{S}=s$ are true, but not necessarily $\code{T}=\code{R}\cap\code{S}$}\}\\
+\code{ALL}&[\code{INSERT}\ \Delta\code{ INTO R},\code{INSERT}\ \Delta\code{ INTO S}]\\
+&\{\code{R}=r\cup\Delta\text{ and }\code{S}=s\cup\Delta\text{, so by eqn.~\ref{lbl:Preserve t=r inter s with Ins Delta into t} we have }\code{T}=\code{R}\cap\code{S}\}
 \end{array}\]
 	Similarly, we can derive code for equation~\ref{lbl:Preserve t=r union s with Del Delta from t}:
 \[\begin{array}{r@{~}l}
 &\{\text{Assume $\code{T}=t$, $\code{R}=r$, $\code{S}=s$, and $\code{T}=\code{R}\cup\code{S}$}\}\\
 \code{DELETE}&\Delta\code{ FROM T};\\
-&\{\text{$\code{T}=t-\Delta$, $\code{R}=r$, $\code{S}=s$ are true, but not necessarily $\code{T}=\code{R}\cup\code{S}$,}\}\\
-\code{ALL}&(\lambda\ x.\code{DELETE}\ \Delta\code{ FROM }x)\ [\code{R},\code{S}]\\
+&\{\text{$\code{T}=t-\Delta$, $\code{R}=r$, $\code{S}=s$ are true, but not necessarily $\code{T}=\code{R}\cup\code{S}$}\}\\
+\code{ALL}&[\code{DELETE}\ \Delta\code{ FROM R},\code{DELETE}\ \Delta\code{ FROM S}]\\
 &\{\code{R}=r-\Delta\text{ and }\code{S}=s-\Delta\text{, so by eqn.~\ref{lbl:Preserve t=r union s with Del Delta from t} we have }\code{T}=\code{R}\cup\code{S}\}
 \end{array}\]
 
 	In equations~\ref{lbl:Preserve t=r inter s with Del Delta from t} and~\ref{lbl:Preserve t=r union s with Ins Delta into t},
-	a choice is being made. For that purpose we need a primitive \code{CHC} with the following specification:
+	a choice must be made between $r$ and $s$. For that purpose we need a primitive \code{CHC} that chooses one action from a list $\code{AS}$, say $\code{A}$:
 \[\begin{array}{r@{~}l}
-&\{\text{Assume }\forall\code{X}\in\code{TERMS}:\code{X}=x\}\\
-\code{CHC}&(\lambda\ x.\code{P}(x))\ \code{TERMS}\\
-&\{\exists\code{X}\in\code{TERMS}:\code{X}=\code{P}(x)\}
+&\{ (\{\id{pre}_{\code{\tiny A}}\}\ \code{A}\ \{\id{post}_{\code{\tiny A}}\})\text{ and } \id{pre}_{\code{\tiny A}} \}\\
+\code{CHC}&\ \code{AS}\\
+&\{\id{post}_{\code{\tiny A}}\}
 \end{array}\]
 	Note that this definition leaves open which term is selected.
-	We do know, however, that \code{P} is executed for one of the terms.
 	The following code shows how this works out for equation~\ref{lbl:Preserve t=r inter s with Del Delta from t}:
 \[\begin{array}{r@{~}l}
 &\{\text{Assume $\code{T}=t$, $\code{R}=r$, $\code{S}=s$, and $\code{T}=\code{R}\cap\code{S}$}\}\\
 \code{DELETE}&\Delta\code{ FROM T};\\
-&\{\text{$\code{T}=t-\Delta$, $\code{R}=r$, $\code{S}=s$ are true, but not necessarily $\code{T}=\code{R}\cap\code{S}$.}\\
-&~~\text{Assume }\forall\code{X}\in\{\code{R},\code{S}\}:\code{X}=x\}\\
-\code{CHC}&(\lambda\ x.\code{DELETE}\ \Delta\code{ FROM }x)\ [\code{R},\code{S}]\\
-&\{\exists\code{X}\in\{\code{R},\code{S}\}:\code{X}=x-\Delta\\
-&~~\text{Either }\code{R}=r-\Delta\text{ or }\code{S}=s-\Delta\text{, so by eqn.~\ref{lbl:Preserve t=r inter s with Del Delta from t} we have }\code{T}=\code{R}\cap\code{S}\}
+&\{\text{$\code{T}=t-\Delta$, $\code{R}=r$, $\code{S}=s$ are true, but not necessarily $\code{T}=\code{R}\cap\code{S}$}\}\\
+\code{CHC}&[\code{DELETE}\ \Delta\code{ FROM R},\code{DELETE}\ \Delta\code{ FROM S}]\\
+&\{\text{Either }\code{R}=r-\Delta\text{ or }\code{S}=s-\Delta\text{, so by eqn.~\ref{lbl:Preserve t=r inter s with Del Delta from t} we have }\code{T}=\code{R}\cap\code{S}\}
 \end{array}\]
 
 	The following code shows how this works out for equation~\ref{lbl:Preserve t=r union s with Ins Delta into t}:
 \[\begin{array}{r@{~}l}
 &\{\text{Assume $\code{T}=t$, $\code{R}=r$, $\code{S}=s$, and $\code{T}=\code{R}\cup\code{S}$}\}\\
 \code{INSERT}&\Delta\code{ INTO T};\\
-&\{\text{$\code{T}=t\cup\Delta$, $\code{R}=r$, $\code{S}=s$ are true, but not necessarily $\code{T}=\code{R}\cup\code{S}$.}\}\\
-\code{CHC}&(\lambda\ x.\code{INSERT}\ \Delta\code{ INTO }x)\ [\code{R},\code{S}]\\
+&\{\text{$\code{T}=t\cup\Delta$, $\code{R}=r$, $\code{S}=s$ are true, but not necessarily $\code{T}=\code{R}\cup\code{S}$}\}\\
+\code{CHC}&[\code{INSERT}\ \Delta\code{ INTO R},\code{INSERT}\ \Delta\code{ INTO S}]\\
 &\{\text{Either }\code{R}=r\cup\Delta\text{ or }\code{S}=s\cup\Delta\text{, so by eqn.~\ref{lbl:Preserve t=r union s with Ins Delta into t} we have }\code{T}=\code{R}\cup\code{S}\}
 \end{array}\]
 
@@ -742,10 +749,10 @@ t=r\cup s&\Rightarrow&t\cup\Delta=(r\cup\Delta)\cup s\label{lbl:Preserve t=r uni
 \text{invariant}&\text{action}&\text{reaction}&\text{eqn.}\\ \hline
 \code{R}=\cmpl{\code{S}}&\code{INSERT}\ \Delta\code{ INTO R}&\code{DELETE }\Delta\code{ FROM S}&\ref{lbl:Preserve r = -s with Ins Delta into r}\\
 \code{R}=\cmpl{\code{S}}&\code{DELETE}\ \Delta\code{ FROM R}&\code{INSERT }\Delta\code{ INTO S}&\ref{lbl:Preserve r = -s with Del Delta from r}\\
-\code{T}=\bigcap\code{TERMS}&\code{INSERT}\ \Delta\code{ INTO T}&\code{ALL }(\lambda\ x.\code{INSERT}\ \Delta\code{ INTO }x)\ \code{TERMS}&\ref{lbl:Preserve t=r inter s with Ins Delta into t}\\
-\code{T}=\bigcup\code{TERMS}&\code{DELETE}\ \Delta\code{ FROM T}&\code{ALL }(\lambda\ x.\code{DELETE}\ \Delta\code{ FROM }x)\ \code{TERMS}&\ref{lbl:Preserve t=r union s with Del Delta from t}\\
-\code{T}=\bigcap\code{TERMS}&\code{DELETE}\ \Delta\code{ FROM T}&\code{CHC }(\lambda\ x.\code{DELETE}\ \Delta\code{ FROM }x)\ \code{TERMS}&\ref{lbl:Preserve t=r inter s with Del Delta from t}\\
-\code{T}=\bigcup\code{TERMS}&\code{INSERT}\ \Delta\code{ INTO T}&\code{CHC }(\lambda\ x.\code{INSERT}\ \Delta\code{ INTO }x)\ \code{TERMS}&\ref{lbl:Preserve t=r union s with Ins Delta into t}\\ \hline
+\code{T}=\bigcap\code{TERMS}&\code{INSERT}\ \Delta\code{ INTO T}&\code{ALL }[\code{INSERT}\ \Delta\code{ INTO X}|\code{X}\in\code{TERMS}]&\ref{lbl:Preserve t=r inter s with Ins Delta into t}\\
+\code{T}=\bigcup\code{TERMS}&\code{DELETE}\ \Delta\code{ FROM T}&\code{ALL }[\code{DELETE}\ \Delta\code{ FROM X}|\code{X}\in\code{TERMS}]&\ref{lbl:Preserve t=r union s with Del Delta from t}\\
+\code{T}=\bigcap\code{TERMS}&\code{DELETE}\ \Delta\code{ FROM T}&\code{CHC }[\code{DELETE}\ \Delta\code{ FROM X}|\code{X}\in\code{TERMS}]&\ref{lbl:Preserve t=r inter s with Del Delta from t}\\
+\code{T}=\bigcup\code{TERMS}&\code{INSERT}\ \Delta\code{ INTO T}&\code{CHC }[\code{INSERT}\ \Delta\code{ INTO X}|\code{X}\in\code{TERMS}]&\ref{lbl:Preserve t=r union s with Ins Delta into t}\\ \hline
 \end{array}\]
 	Having treated the boolean operators, let us consider code that is needed when relational operators are involved.
 
@@ -826,13 +833,6 @@ r;s\cup\Delta=(r\cup \Delta_r);(s\cup \Delta_s)\label{eqn:ins delta r;s}
 	This derivation shows that every solution $\Delta_s$ contains $s-(r\cup \Delta)\backslash(r;s)$.
 	So the latter, $s-(r\cup \Delta)\backslash(r;s)$, is the smallest solution.
 
-	By using the absorption property
-\begin{equation}
-s-(s\cap x)=s-x\label{absorb x}
-\end{equation}
-	it is obvious that $(r\cup \Delta)\backslash(r;s)$ is a solution too.
-	Even though this solution may contain more pairs, it is equivalent to the minimal solution.
-
 	The smallest solution might not contain all pairs from $r;s$.
 	The missing pairs are $r;s-(r\cup\Delta);(s-(r\cup \Delta)\backslash(r;s))$.
 	Therefore it may be necessary to reintroduce these missing pairs afterwards.
@@ -852,7 +852,6 @@ s-(s\cap x)=s-x\label{absorb x}
 \hspace{0.5in}\{\code{R};\code{S}=r;s\cup(\code{T}-\code{R};\code{S})=r;s\\
 \hspace{0.575in}\text{so }\code{R};\code{S}=\code{T}\}
 \end{array}\]
-
 
 	Let us now study how to delete pairs $\Delta$ from $r$ while keeping $r;s$ constant.
 	This involves inserting pairs into $s$ such that:
@@ -962,16 +961,23 @@ r;s\ \subs\ (r-\Delta);(s\cup\Delta_s)\label{lbl:nonshrinking r;s when Del from 
 
 \section{Reflection}
 \label{sct:Reflection}
-	Ampersand is built on the belief that software development should be automated.
-	It uses rules to represent requirements, in the firm belief that consistent requirements are essential to the software development process~\cite{Boehm1981}.
-	Being fully aware of the fate of formal methods in computer science, Ampersand is founded on the belief that software development must be done more formally.
-	So Ampersand is building further on the foundations laid by formal specification methods
-	such as Z~\cite{Z} and Alloy~\cite{Alloy2006}.
-	In contrast however with such methods, Ampersand is equipped with a software generator that generates an information system.
-	Thus, specifying in Ampersand is developing software at the same time.
-	Ampersand complements the RelView approach~\cite{Berghammer2005}, which also generates software but is stronger in specifying complex computational problems.
+	Ampersand is being built on the belief that software development should be automated.
+	The holy grail is to derive deterministic ways to preserve invariants, to allow for programming by constraints.
+	This is motivated by the benefits of describing a result in terms of constraints,
+	rather than having to invent all the steps that lead to that result.
+	For example, describing the situation that any financial transaction must preserve the total amount of money is simpler
+	than having to describe all the steps involved in such a transaction.
+	The attraction is not only for the programmer, but even more so for auditors and users for who the constraints are easier to grasp and validate.
+	In this paper we have shown how to derive specific steps,
+	helping the programmer to invent code and providing mathematical assurance of correctness (compliance-by-design).
 
-	In retrospect we see that programming in relation algebra yields an unconventional programming experience.
+	The analysis in this paper shows once more that inventing algorithms for preserving invariants is far from trivial.
+	Algorithms cannot be derived from constraints alone. The choices that remain must be resolved first.
+	This paper does show, however, that these choices occur in predictable ways.
+	That gives opportunities, for instance to make these choices explicit to a user, to optimize the number of choices,
+	or to use external knowledge to resolve the remaining choices on runtime.
+
+	In practice we have experienced that programming by constraints in relation algebra yields an unconventional way of programming.
 	This experience consists of inventing rules and choosing event types for resolving violations, as illustrated by the case study.
 	To relate this experience to programming as we know it, section~\ref{sct:Comparison} makes a comparison with established programming languages (prior art).
 	Section~\ref{sct:Contribution} summarizes the contributions to software development claimed by Ampersand.
@@ -1012,8 +1018,17 @@ r;s\ \subs\ (r-\Delta);(s\cup\Delta_s)\label{lbl:nonshrinking r;s when Del from 
 	Where formal specification techniques typically analyse and diagnose specifications,
 	Ampersand actually synthesizes (generates) information systems.
 
-	If Ampersand represents a programming style at all, we might call it ``a relation-algebraic style of programming''.
-	That style would be characterized by a programmer who specifies constraints and a computer trying to satisfy these constraints by resolving violations.
+	The similarity with the reactive programming paradigm~\cite{Bainomugisha2013} is obvious from figure~\ref{fig:event flow}.
+	This graph is part of the program graph as conceived in reactive programs.
+	The code fragments described in section~\ref{sct:Code Fragments}
+	might be generated towards a mature reactive programming language (e.g. ELM)
+	and executed directly.
+	Ampersand lets you think in constraints and (reactive) code fragments to preserve invariants can be generated with the theory in this paper.
+	Currently Ampersand generates towards classical PHP+HTML+JavaScript code,
+	but generation to a reactive programming language (e.g. ELM) is definitely on the wishlist.
+
+	If Ampersand represents a programming style at all, we might call it a relation-algebraic style of programming or maybe constraint programming\footnote{https://en.wikipedia.org/wiki/Constraint\_programming}.
+	Ampersand's style would be characterized by a programmer who specifies constraints and a computer trying to satisfy these constraints by resolving violations.
 
 \subsection{Contribution}
 \label{sct:Contribution}
@@ -1043,17 +1058,17 @@ r;s\ \subs\ (r-\Delta);(s\cup\Delta_s)\label{lbl:nonshrinking r;s when Del from 
 \subsection{Ampersand in Practice}
 \label{sct:Ampersand in practice}
 	Ampersand has been used in practice both in education (Open University of the Netherlands)
-	and in industry (Ordina and TNO-ICT).
-	For example, Ordina designed a proof-of-concept in 2007 of the INDIGO-system.
-	This design was based on Ampersand, to obtain correct, detailed results in the least amount of time.
-	Today INDIGO is in use as the core information system of the Dutch immigration authority, IND.
+	and in industry (Ordina and TNO).
+	For example, Ordina designed a proof-of-concept in 2007 of the INDIGO-system,
+	which is still in use today as the core information system of the Dutch immigration authority, IND.
+	The design of INDIGO was made with Ampersand, to obtain correct, detailed results in the least amount of time.
 	More recently, Ampersand was used to design an information system called DTV for the Dutch food authority, NVWA.
-	A prototype of DTV was built in Ampersand and was used as a model to build the actual system.
-	TNO-ICT, a major Dutch industrial research laboratory, is using Ampersand for research purposes.
-	For example, TNO-ICT did a study of international standardizations efforts such as
+	A prototype of DTV was built by Ampersand and was used as a model to build the actual system.
+	TNO, a major Dutch industrial research laboratory, is using Ampersand for research purposes.
+	For example, TNO did a study of international standardizations efforts such as
 	RBAC (Role Based Access Control) in 2003 and architecture (IEEE 1471-2000)~\cite{IEEE1471} in 2004.
 	Several inconsistencies were found in the last (draft) RBAC standard~\cite{RBAC}.
-	TNO-ICT has also used the technique in conceiving several patents%
+	TNO has also used the technique in conceiving several patents%
 \footnote{e.g. patents DE60218042D, WO2006126875, EP1727327, WO2004046848, EP1563361, NL1023394C, EP1420323, WO03007571, and NL1013450C.}.
 	At the Open University of the Netherlands, Ampersand is being taught in a course called Rule Based Design~\cite{RBD}.
 	In this course, students use a platform called RAP, which has been built in Ampersand~\cite{Michels2015}.
@@ -1070,7 +1085,14 @@ r;s\ \subs\ (r-\Delta);(s\cup\Delta_s)\label{lbl:nonshrinking r;s when Del from 
 	Other research is needed towards a comprehensive theory of information systems.
 	Currently, there is no theory (in the mathematical meaning of the word) for information systems.
 	In the Ampersand project, a sub-project called ``Formal Ampersand'' is being conducted to achieve this goal.
-\bibliographystyle{spmpsci}
+\subsection{Acknowledgements}
+\label{sct:Acknowledgements}
+	Firstly, I wish to thank Sebastiaan Joosten for introducing me to Isabelle and for inspiring me with his challenging critiques.
+	I owe many thanks to Wolfram Kahl, Michiel Stornebrink, Han Joosten, and the anonymous reviewers of RAMiCS for their useful feedback.
+	And I am very grateful to the Open University and Ordina for funding this research.
+
+\section{Bibliography}
+\bibliographystyle{elsarticle-harv}
 \bibliography{doc}
 
 
