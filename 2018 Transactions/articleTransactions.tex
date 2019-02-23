@@ -10,23 +10,27 @@
 \selectlanguage{english}
 \include{preamramics}
 \hyphenation{ExecEngine}
+\def\id#1{\text{\em #1\/}}
+\def\Events{{\mathit E}}
 \begin{document}
 
 \title{A Theory for Database Transactions with no Database}
 \author[ou,ordina]{Stef Joosten\fnref{fn1}}
 \ead{stef.joosten@ou.nl}
 \address[ou]{Open Universiteit Nederland, Postbus 2960, 6401 DL Heerlen, the Netherlands}
-\address[ordina]{Ordina NV,  Nieuwegein, the Netherlands}
+\address[ordina]{Ordina NV, Nieuwegein, the Netherlands}
 \fntext[fn1]{ORCID 0000-0001-8308-0189}
 
 \begin{abstract}
-	How to do transactions if data is scattered across the internet?
-	Users who must satisfy data integrity constraints are stuck with relational databases if they need transactions.
-	For most NoSQL databases lack transaction functionality.
-	This contribution proposes a theory of database transactions solely based on data,
-	with no reference to any database in which that data resides.
-	This makes transactions suitable for a wider class of databases than just relational ones.
-	The soundness of the theory has been established by means of category theory.
+	How can we make transactions work in distributed information systems without a shared database?
+	Transaction theory as we know it assumes a shared data space.
+	Multiple processes are acting simultaneously, each making changes to that shared data space.
+	The observation that transaction mechanisms in NoSQL databases are not common
+	makes us feel that a solution to this problem is not so obvious.
+
+	This contribution proposes a theory of database transactions without a shared data space.
+	This makes transactions suitable for more databases than just relational ones.
+	The soundness of the theory has been established by means of formal proof.
 	To show that the theory works, the theory is demonstrated by a prototype developed in Ampersand\footnote{\tt https://github.com/AmpersandTarski/Ampersand}.
 	To demonstrate that the theory is about real transactions, this contribution defines semantics of conventional database transactions.
 	To fulfill our promise, we also gives semantics of transactions on the semantic web.
@@ -39,12 +43,304 @@ relation algebra\sep software development\sep legal reasoning\sep information sy
 
 \section{Introduction}
 \label{sct:Introduction}
+	A distributed information system (DIS) serves its users by registering data, guarding the consistency, protecting the data,
+	and providing that data accurately and meaningfully for its intended purpose.
+	Users want predictable behaviour when they are simultaneously changing a shared state (e.g.\ flight reservation).
+	For that purpose a transaction mechanism preserves system-wide invariants.
+	Many transaction mechanisms are known that presume a shared database [refs].
+	However, shared databases are not always an option in distributed cloud architectures.
+	Globally distributed applications such as Netflix and LinkedIn cannot afford to rely on a shared database for obvious reasons of performance and reliability.
+	Many cloud applications use distributed storage models instead.
+	Examples are event stores (e.g.\ Kafka), triple stores (e.g.\ semantic web), graph databases (e.g. Neo4J) and others.
+	These so-called NoSQL databases often lack functionality for transactions.
+	For the purpose of doing transactions in a non-transactional situation, several architectural patterns exist.
+	Some of these patterns simply circumvent the problem.
+	Others will isolate transactionality into a smaller sub-problem.
+	Still others introduce locking mechanisms to do the job.
+	Yet, in the world of event-driven distributed systems, a dire need is felt for a theory that brings what transactions do for shared databases.
+	
+	This paper presents such a theory.
+	It describes transactions without the assumption of a shared database.
+	In this theory we express the characteristic properties of transactions: Atomicity, Consistency, Isolation, and Durability.
+	{\em Atomicity} means that a sequence of primitive actions can be executed as though it were a single action.
+	{\em Consistency} means that integrity rules are warranted by the database management system.
+	{\em Isolation} means that actions can be done without any knowledge of what other users are doing simultaneously.
+	{\em Durability} means that the contents of a database cannot change unintendedly.
+	To motivate this theory, let us formulate requirements to characterize a DIS:
+
+\section{Events}
+\label{sct:Events}
+	We need the notion of {em event}\footnote{Cambridge Dictionary defines ``event'' as: anything that happens} to describe things that happen in a DIS.
+	Let us study the requirements for events in formal terms.
+	In this contribution we use variables $e$, $e_1$, and $e_2$ to represent events.
+	Let $\mathbb E$ represent the set of all conceivable events.
+
+	For the purpose of discussing history, we introduce a structure that represents a history at one moment in time.
+	A {\em historic structure} is a tuple $\la \Events, \id{prec}\ra$ in which
+	\begin{eqnarray}
+		&&\Events\text{ is a finite set of events.}\\
+		&&\id{prec}\ \subseteq\ \Events\times\Events\label{req:precInE}\\
+		&&\id{prec}^*\text{ is antisymmetric.}\label{req:precAntisymmetric}
+	\end{eqnarray}
+	Let set $\Events$ represent all events that the DIS has registered up to some point in time.
+	So for every event $e\in\Events$ we can say that it has occured (at some time in the past).
+	Let $e_1\ \id{prec}\ e_2$ represent the fact that event $e_1$ has occured before event $e_2$,
+	making $\id{prec}$ a relation on events in $\Events$.
+	\marginpar{claim}
+	To represent time faithfully, we need an order on time that is a partial order,
+	i.e.\ an order which is reflexive, transitive, and antisymmetric.
+	For this reason requirement~\ref{req:precAntisymmetric} requires $\id{prec}^*$
+	(which is the reflexive and transitive closure of $\id{prec}$)
+	to be antisymmetric.
+	With these requirements in place,  $\la\Events,\id{prec}^*\ra$ is the partial order that we need to represent time.
+
+	An event $e$ that precedes another event is called a {\em past} event,
+	which we define as \ $\exists e_1: e\ \id{prec}\ e_1$.
+	All other events in a historic structure are called {\em current} events.
+	The special case in which $\id{prec}^*$ is a total order is called a {\em linear historic structure}.
+	Note that any nonempty linear historic structure has one current event.
+	Other historic structures may have more.
+
+	As time passes by, new events occur.
+	We describe each occurrence as a mapping, $\id{occur}_{P,e}$, from one historic structure to another:
+\begin{equation}
+	\id{occur}_{P,e}(\la \Events, \id{prec}\ra)\ =\ \la \Events\cup\{e\}, \id{prec}\cup\{(e_1,e) | e_1\in P\}\ra
+\label{req:def occur}
+\end{equation}
+	The occurrence of $e$ adds one event to $\Events$.
+	It also enlarges relation $\id{prec}$ with one tuple for every immediate predecessor of $e$.
+	The immediate predecessors of $e$ are specified in set $P$, which we call the predecessor set.
+	Note that this enlargement can make current events become past events.
+	If $h'=\id{occur}_{P,e}(h)$, the events in $P$ become past events in $h'$ and event $e$ becomes current in $h'$.
+
+	We need the predecessor set to cater for the distributed nature of a DIS.
+	In a linear historic structure,
+\marginpar{claim}
+	$P$ is alway a singleton set.
+	In that case, every event except the first one has precisely one preceding event.
+	In general, however, events may have multiple preceding events and the predecessor set is not necessarily a singleton set.
+
+	Note that the definition of $\id{occur}_{P,e}$ (\ref{req:def occur}) must respect requirement~\ref{req:precInE}.
+	If $P$ would contain events that are not in $\Events$, these events appear in relation $\id{prec}$ and hence violate requirement~\ref{req:precInE}.
+\marginpar{claims}
+	So this requires that $P\subseteq\Events$.
+	Similarly, event $e$ cannot be an element of $\Events$, because that would violate the antisymmetry of $\id{prec}^*$ (requirement~\ref{req:precAntisymmetric}).
+	So in a specification style with pre- and postconditions%
+	\footnote{Also known as ``Floyd-Hoare style''}
+	we specify:
+\[\begin{array}{ll}
+	\text{pre:}&P\subseteq\Events\\
+	&e\notin\Events\\
+	&\id{Events}=\Events\\
+	&\id{pr}=\id{prec}\\[1em]
+	\multicolumn{2}{l}{\ \ \ \id{occur}_{P,e}\la \id{Events}, \id{pr}\ra}\\[1em]
+	\text{post:}&\id{Events}=\Events\cup\{e\}\\
+	&\id{pr}=\id{prec}\cup\{(e_1,e) | e_1\in P\}\\
+\end{array}\]
+
+	We define $\la \Events, \id{prec}\ra$ a {\em historic substructure} of $\la \Events', \id{prec}'\ra$
+	if $\Events\subseteq\Events'$ and $\id{prec}\subseteq\id{prec}'$.
+	We denote this as
+\begin{equation}
+	\la \Events, \id{prec}\ra\ \subseteq\ \la \Events', \id{prec}'\ra
+\end{equation}
+\marginpar{claim}
+	Note that $h'=\id{occur}_{P,e}(h)$ implies that $h\subseteq h'$.
+
+	Having defined historic structures and the way they grow, let us proceed to determine requirements for threads and states.
+	In the sequel, we will use variables $h$ and $h'$ to denote history structures.
+
+\section{States}
+	This section defines the requirements for predictable behavior of distributed information systems (DIS).
+	First we need to introduce the notion of state.
+	Let $\mathbb S$ represent the set of all conceivable states,
+	with one special state $\mathcal I$ that represents the initial state.
+	Let $\id{state}:\Events\rightarrow{\mathbb S}$ be a function that maps every event in a DIS to a state.
+	We pronounce $\id{state}(e)$ as ``the state immediately after event $e$ has occured'',
+	or shorter: ``the state after event $e$''.
+	A {\em current state} of a DIS is the state after a current event of that system
+	and a {\em past state} is the state after a past event.
+	
+	Each time a new event occurs, a change of state takes place.
+	To accommodate such changes,
+	we use triples $(e_1,e,\Delta)$ instead of tuples $(e_1,e)$.
+	$\Delta$ represents the change from the state after event $e_1$ to the state after event $e$.
+	Besides an event $e$ and immediate predecessors $P$,
+	it takes a function $\delta$ to represent the change of state between two events:
+\begin{eqnarray}
+	\id{occur}_{P,e,\delta}\la \Events, \id{precd}\ra\ =\ \la \Events\cup\{e\}, \id{precd}\cup\{(e_1,e,\delta(e_1,e)) | e_1\in P\}\ra
+\end{eqnarray}
+	Additionally we require an operator $\oplus$ to compute the next state.
+	This provides the means to define a {\em stateful historic structure} as a tuple $\la \Events, \id{precd}\ra$ in which
+	$\id{precd}$ is a set of triples such that
+\begin{eqnarray}
+	&&\la \Events, \{(e_1,e)| (e_1,e,\Delta)\in\id{precd}\}\ra\text{ is a historic structure.}\\
+	&&(e_1,e,\Delta)\in\id{precd}\ \Rightarrow\ \id{state}(e)=\id{state}(e_1)\oplus\Delta\label{eqn:nextState}\\
+	&&(\exists e_1:(e_1,e,\Delta)\in\id{precd})\ \vee\ \id{state}(e)=\mathcal I\label{eqn:totState}\\
+	&&\begin{array}{@{}l}
+		(e_1,e,\Delta_1)\in\id{precd}\ \wedge\ (e_2,e,\Delta_2)\in\id{precd}\\
+		\ \ \Rightarrow\ \id{state}(e_1)\oplus\Delta_1\ =\ \id{state}(e_2)\oplus\Delta_2\label{eqn:uniState}
+	\end{array}
+\end{eqnarray}
+	Requirement~\ref{eqn:nextState} says that the state of non-initial events can be computed using $\oplus$.
+	Requirement~\ref{eqn:totState} says that the state of an initial event (i.e.\ events without predecessor) is the initial state.
+	Together, requirements~\ref{eqn:nextState} and~\ref{eqn:totState} define the function $\id{state}$ recursively.
+\marginpar{claim}
+	Requirement~\ref{eqn:uniState} ensures that $\id{state}$ is defined unambiguously,
+	meaning that every event in $\Events$ has precisely one state.
+	Thus, states are defined predictably in a DIS.
+
+	We define $\la \Events, \id{precd}\ra$ a {\em stateful historic substructure} of $\la \Events', \id{precd}'\ra$
+	if $\Events\subseteq\Events'$ and $\id{precd}\subseteq\id{precd}'$.
+	We denote this as
+\begin{equation}
+	\la \Events, \id{precd}\ra\ \subseteq\ \la \Events', \id{precd}'\ra
+\end{equation}
+\marginpar{claim}
+	Note that $\id{occur}_{P,e,\delta}(h)=h'$ implies that $h\subseteq h'$.
+
+	\marginpar{claim}
+	Can we prove $\oplus$ to be associative, commutative, and idempotent? Why would we do that?
+
+\section{Bibliography}
+\bibliographystyle{elsarticle-harv}
+\bibliography{doc}
+
+
+\end{document}
+
+	\section{Threads}
+	So how does a stateful historic structure represent a distributed information system?
+\marginpar{claim}
+	Part of the answer is that a substructure of a stateful historic structure is a stateful historic structure by itself.
+
+	The answer is that we have made no assumptions about location,
+	like for instance that there is a shared memory.
+	Even if we assume that each state exists in one location,
+	a stateful historic structure can still have multiple current states.
+	Each of these states can exist in a separate location.
+
+	The purpose of threads is to support deterministic computations.
+	We consider any nonempty historic structure that is totally ordered to be a thread.
+	A {\em thread} is a historic structure $\la \Events, \id{prec}\ra$ that satisfies
+\begin{eqnarray}
+	\forall e_1,e_2&:&e_1\in\Events\ \wedge\ e_2\in\Events\ \Rightarrow\ e_1\ \id{prec}^*\ e_2\vee e_2\ \id{prec}^*\ e_1\label{eqn:order is total}\\
+	\exists e&:&e\in\Events\label{eqn:nonempty thread}
+\end{eqnarray}
+	The total order (\ref{eqn:order is total}) is required to get deterministic results from a computation in a thread.
+	In order to talk about the first and the last event in a thread, we require at least one event (\ref{eqn:nonempty thread}) in a thread.
+	We shall use variable $t$ to represent threads.
+	The first event in a thread $t$ is the infimum of the events in $t$;
+	the last event is the supremum.
+
+	We need the notion of state%
+	\footnote{Cambridge Dictionary meaning of ``state'':
+	a condition or way of being that exists at a particular time}
+	to describe things that change over time.
+	We shall use variables $s$, $s_1$, and $s_2$ to denote states.
+	Let $\id{state}(e)$ represent the state after event $e$ has occured.
+
+\section{Distributed Information System}
+	
+	Now equation~\ref{eqn:eval step} is the recursion step and the initial state is
+	the starting point of the recursive computation of the final state of $t$.
+	We consider a distributed information system as a set of processes that share a history.
+	The system is distributed because processes need not share all histories.
+	We need the notion of process%
+	\footnote{Cambridge Dictionary meaning of ``process'':
+		a series of actions that you take in order to achieve a result}
+	to describe how components of a DIS interact.
+	Let $\mathbb P$ be the set of all processes.
+	We have formulated the following requirements:
+	\begin{itemize}
+	\item Belong/Contain\\
+		To represent the fact that an event {\em belongs to} a process or
+		(equivalently) that a process {\em contains} certain events,
+		let $e\in p$ represent the statement that event $e$ belongs to process $p$.
+	\item Shared history\\
+		To abstract away from location, we make no assumptions with respect to the place where a process lives.
+		However, to partake in a distributed system, processes must be able to share history.
+		For that purpose we define what it means to be part of a history:
+		\begin{equation}
+			p\ \id{partof}\ h\ \Leftrightarrow\ (\forall e: e\in p\Rightarrow e\in h)
+		\end{equation}
+		We define an order between processes that share a history.
+		\begin{equation}
+			p_1\ \preceq\ p_2\ \Leftrightarrow(\forall e: e\in p_1\Rightarrow e\in p_2)
+		\end{equation}
+		We can prove that
+		\begin{equation}
+			p_1\ \preceq\ p_2\ \Rightarrow\ (\exists h:p_1\ \id{partof}\ h\wedge p_2\ \id{partof}\ h)
+		\end{equation}
+	\item Total order\\
+		We require a process to have predictable behaviour, for which we need the process to contain a series (sequence) of events.
+		So we require that $(\{e|e\in p\}, \preceq)$ is a total order.
+		Apart from being a partial order, $\preceq$ must satisfy (for every $e_1$, $e_2$, and $p$):
+		\begin{equation}
+			e_1\in p\ \wedge\ e_2\in p\ \Rightarrow\ e_1\preceq e_2\vee e_2\preceq e_1
+		\end{equation}
+	\end{itemize}
+	
+\section{States}
+	\begin{itemize}
+	\item Revert\\
+		A change can be used to compute a previous state.
+		For this purpose we require an operator $\ominus$ such that
+	\begin{equation}
+		s_1\oplus\Delta=s_2\ \Leftrightarrow\ s_1=s_2\ominus\Delta
+	\end{equation}
+		As a consequence, we have for every event $e$:
+	\begin{equation}
+		\id{state}(\id{past}(e))=\id{state}(\id{pres}(e))\ominus\id{delta}(e)
+	\end{equation}
+		With $\preceq$ being reflexive, antisymmetric, and transitive,
+		it follows immediately that $\oplus$ is idempotent, commutative, and associative.
+	\end{itemize}
+
+\section{Atomicity}
+\label{sct:Atomicity}
+	{\em Atomicity} means that multiple primitive actions are executed as one.
+	So let us first define the notion of atomic action.
 
 \section{Consistency}
 \label{sct:Consistency}
-	Each user of a database issues a stream of events.
+	{\em Consistency} means that integrity rules are warranted by the database management system.
+
+	If $s$ is a state and $r$ is an integrity rule, then $s\ \id{sat}\ r$ means that $s$ satisfies rule $r$
+	and $s\ \overline{\id{sat}}\ r$ means that $s$ does not satisfy rule $r$.
+
+	Let us call the set of integrity rules $\mathcal R$.
+	A state $s$ is called consistent if it satisfies every integrity rule $r\in\mathcal R$
+\begin{equation}
+	\id{consistent}(s)\ =\ \forall r\in\mathcal R: s\ \id{sat}\ r
+\end{equation}
+	The system is consistent if the initial state is consistent and it can only reach consistent states by means of atomic actions.
+	So all states in the history graph are consistent with $\mathcal R$.
+
+
+\section{Isolation}
+\label{sct:Isolation}
+{\em Isolation} means that actions can be done without any knowledge of what other users are doing simultaneously.
+
+\section{Durability}
+\label{sct:Durability}
+{\em Durability} means that the contents of a database cannot change unintendedly.
+
+\section{Bibliography}
+\bibliographystyle{elsarticle-harv}
+\bibliography{doc}
+
+
+\end{document}
+
+%% Obsolete
+
+\section{Consistency}
+\label{sct:Consistency}
+Each user of a database issues a stream of events.
 	The order (in time) of events is given by a relation\footnote{%
-A relation $\declare{r}{A}{B}$ is a set of tuples $\pair{a}{b}$ with $a\in A$ and $b\in B$} $\declare{pred}{Event}{Event}$,
+A relation $\declare{r}{A}{B}$ is a set of tuples. Each tuple $\pair{a}{b}$ in that set satisfies $a\in A$ and $b\in B$}
+	$\declare{pred}{Event}{Event}$,
 	where $\pair{e1}{e2}\in\id{pred}$ means that event $e1$ precedes event $e2$.
 	From a user perspective this stream is a sequence, so every event except the first has exactly one predecessor.
 	
