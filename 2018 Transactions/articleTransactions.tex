@@ -5,11 +5,13 @@
 \usepackage{amstext}
 \usepackage{amsmath}
 \usepackage{amssymb}
+\usepackage{amsthm}
 \usepackage[english]{babel}
 %\usepackage[official,right]{eurosym}
 \selectlanguage{english}
 \include{preamramics}
 \hyphenation{ExecEngine}
+\newtheorem{lemma}{Lemma}
 \def\id#1{\text{\em #1\/}}
 \def\Events{{\mathit E}}
 \begin{document}
@@ -68,35 +70,38 @@ relation algebra\sep software development\sep legal reasoning\sep information sy
 	{\em Durability} means that the contents of a database cannot change unintendedly.
 	To motivate this theory, let us formulate requirements to characterize a DIS:
 
+\section{Related work}
+\label{sct:Related work}
+\cite{Foster17c}
+
 \section{Events}
 \label{sct:Events}
-	We need the notion of {em event}\footnote{Cambridge Dictionary defines ``event'' as: anything that happens} to describe things that happen in a DIS.
+	We need the notion of {\em event}\footnote{Cambridge Dictionary defines ``event'' as: anything that happens} to describe things that happen in a DIS.
 	Let us study the requirements for events in formal terms.
-	In this contribution we use variables $e$, $e_1$, and $e_2$ to represent events.
+	In this work we use variables $e$, $e_1$, and $e_2$ to represent events.
 	Let $\mathbb E$ represent the set of all conceivable events.
 
 	For the purpose of discussing history, we introduce a structure that represents a history at one moment in time.
 	A {\em historic structure} is a tuple $\la \Events, \id{prec}\ra$ in which
-	\begin{eqnarray}
-		&&\Events\text{ is a finite set of events.}\\
-		&&\id{prec}\ \subseteq\ \Events\times\Events\label{req:precInE}\\
-		&&\id{prec}^*\text{ is antisymmetric.}\label{req:precAntisymmetric}
-	\end{eqnarray}
+\begin{eqnarray}
+	&&\Events\text{ is a finite set of events.}\\
+	&&\id{prec}\ \subseteq\ \Events\times\Events\label{req:precInE}\\
+	&&(e,e)\notin\id{prec}\label{req:prec irreflexive}\\
+	&&(e_1,e_2)\in\id{prec}^+\ \wedge\ (e_2,e_1)\in\id{prec}^+\ \Rightarrow\ e_1=e_2\label{req:precPlus asy}
+\end{eqnarray}
 	Let set $\Events$ represent all events that the DIS has registered up to some point in time.
 	So for every event $e\in\Events$ we can say that it has occured (at some time in the past).
 	Let $e_1\ \id{prec}\ e_2$ represent the fact that event $e_1$ has occured before event $e_2$,
 	making $\id{prec}$ a relation on events in $\Events$.
-	\marginpar{claim}
-	To represent time faithfully, we need an order on time that is a partial order,
-	i.e.\ an order which is reflexive, transitive, and antisymmetric.
-	For this reason requirement~\ref{req:precAntisymmetric} requires $\id{prec}^*$
-	(which is the reflexive and transitive closure of $\id{prec}$)
-	to be antisymmetric.
-	With these requirements in place,  $\la\Events,\id{prec}^*\ra$ is the partial order that we need to represent time.
+	For this reason, requirement~\ref{req:prec irreflexive} excludes the situation that $e$ has occured before itself.
+	To represent time faithfully, we require that $\la\Events,\id{prec}^*\ra$ is a partially ordered set,
+	meaning that $\id{prec}^*$ is reflexive, transitive, and antisymmetric.
+	For this reason equation~\ref{req:precPlus asy} requires the transitive closure $\id{prec}^+$ to be antisymmetric.
 
-	An event $e$ that precedes another event is called a {\em past} event,
-	which we define as \ $\exists e_1: e\ \id{prec}\ e_1$.
-	All other events in a historic structure are called {\em current} events.
+	In a historic structure $\la \Events, \id{prec}\ra$, an event $e$ that precedes another event is called a {\em past} event,
+	which we define as \ $\exists e_1\in\Events: e\ \id{prec}\ e_1$.
+	All other events are called {\em current} events in that historic structure.
+
 	The special case in which $\id{prec}^*$ is a total order is called a {\em linear historic structure}.
 	Note that any nonempty linear historic structure has one current event.
 	Other historic structures may have more.
@@ -108,46 +113,41 @@ relation algebra\sep software development\sep legal reasoning\sep information sy
 \label{req:def occur}
 \end{equation}
 	The occurrence of $e$ adds one event to $\Events$.
-	It also enlarges relation $\id{prec}$ with one tuple for every immediate predecessor of $e$.
+	It also enlarges relation $\id{prec}$ with one pair for every immediate predecessor of $e$.
 	The immediate predecessors of $e$ are specified in set $P$, which we call the predecessor set.
-	Note that this enlargement can make current events become past events.
-	If $h'=\id{occur}_{P,e}(h)$, the events in $P$ become past events in $h'$ and event $e$ becomes current in $h'$.
-
 	We need the predecessor set to cater for the distributed nature of a DIS.
 	In a linear historic structure,
-\marginpar{claim}
 	$P$ is alway a singleton set.
 	In that case, every event except the first one has precisely one preceding event.
 	In general, however, events may have multiple preceding events and the predecessor set is not necessarily a singleton set.
+\begin{lemma}
+\label{lemma:occur preserves historic structure}
+	If $h=\la \Events, \id{prec}\ra$ is a historic structure and $P\subseteq\Events$ and $e\notin\Events$
+	then $\id{occur}_{P,e}(h)$ is a historic structure.
+\end{lemma}
+	This lemma has been proven in proof assistant Isabelle/HOL.
+	To understand why $P\subseteq\Events$ is necessary,
+	let $\la \Events', \id{prec}'\ra=\id{occur}_{P,e}(h)$.
+	Now suppose event $e_1\in P$ but $e_1\notin\Events$.
+	Equation~\ref{req:def occur} tells us that $(e_1,e)\in\id{prec}'$.
+	However, this violates requirement~\ref{req:precInE}.
+	So it is necessary that every $e_1\in P$ is an element of $\Events$.
+	Similarly, $e\notin\Events$ is a necessary condition,
+	because any $e\in\Events$ violates the antisymmetry of $\id{prec}^+$ (requirement~\ref{req:precPlus asy}).
 
-	Note that the definition of $\id{occur}_{P,e}$ (\ref{req:def occur}) must respect requirement~\ref{req:precInE}.
-	If $P$ would contain events that are not in $\Events$, these events appear in relation $\id{prec}$ and hence violate requirement~\ref{req:precInE}.
-\marginpar{claims}
-	So this requires that $P\subseteq\Events$.
-	Similarly, event $e$ cannot be an element of $\Events$, because that would violate the antisymmetry of $\id{prec}^*$ (requirement~\ref{req:precAntisymmetric}).
-	So in a specification style with pre- and postconditions%
-	\footnote{Also known as ``Floyd-Hoare style''}
-	we specify:
-\[\begin{array}{ll}
-	\text{pre:}&P\subseteq\Events\\
-	&e\notin\Events\\
-	&\id{Events}=\Events\\
-	&\id{pr}=\id{prec}\\[1em]
-	\multicolumn{2}{l}{\ \ \ \id{occur}_{P,e}\la \id{Events}, \id{pr}\ra}\\[1em]
-	\text{post:}&\id{Events}=\Events\cup\{e\}\\
-	&\id{pr}=\id{prec}\cup\{(e_1,e) | e_1\in P\}\\
-\end{array}\]
+	Note that the occurence of an event can make current events become past events.
+	If $h'=\id{occur}_{P,e}(h)$, the events in $P$ become past events in $h'$ and event $e$ becomes current in $h'$.
 
-	We define $\la \Events, \id{prec}\ra$ a {\em historic substructure} of $\la \Events', \id{prec}'\ra$
-	if $\Events\subseteq\Events'$ and $\id{prec}\subseteq\id{prec}'$.
-	We denote this as
+	Let $h$ and $h'$ be historic structures.
+	We use the subset symbol $\subseteq$ to represent the fact that $h$ is a {\em historic substructure} of $h'$.
+	This is defined as:
 \begin{equation}
-	\la \Events, \id{prec}\ra\ \subseteq\ \la \Events', \id{prec}'\ra
+\label{def:historic substructure}
+	\la \Events, \id{prec}\ra\ \subseteq\ \la \Events', \id{prec}'\ra\ \Leftrightarrow\ \Events\subseteq\Events'\ \wedge\ \id{prec}\subseteq\id{prec}'
 \end{equation}
-\marginpar{claim}
-	Note that $h'=\id{occur}_{P,e}(h)$ implies that $h\subseteq h'$.
+	Note that $\id{occur}_{P,e}(h)=h'$ implies that $h\subseteq h'$.
 
-	Having defined historic structures and the way they grow, let us proceed to determine requirements for threads and states.
+	Having defined historic structures and the way they grow, let us proceed to determine requirements for states.
 	In the sequel, we will use variables $h$ and $h'$ to denote history structures.
 
 \section{States}
@@ -224,7 +224,7 @@ relation algebra\sep software development\sep legal reasoning\sep information sy
 	We consider any nonempty historic structure that is totally ordered to be a thread.
 	A {\em thread} is a historic structure $\la \Events, \id{prec}\ra$ that satisfies
 \begin{eqnarray}
-	\forall e_1,e_2&:&e_1\in\Events\ \wedge\ e_2\in\Events\ \Rightarrow\ e_1\ \id{prec}^*\ e_2\vee e_2\ \id{prec}^*\ e_1\label{eqn:order is total}\\
+	\forall e_1,e_2&:&e_1\in\Events\ \wedge\ e_2\in\Events\ \Rightarrow\ e_1\ \id{prec}+\ e_2\vee e_2\ \id{prec}^+\ e_1\label{eqn:order is total}\\
 	\exists e&:&e\in\Events\label{eqn:nonempty thread}
 \end{eqnarray}
 	The total order (\ref{eqn:order is total}) is required to get deterministic results from a computation in a thread.
