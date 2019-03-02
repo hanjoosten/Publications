@@ -1,4 +1,7 @@
 articleRamics.pdf
+*.bbl
+*.blg
+*.spl
 *.aux
 *.log
 */article*.pdf
