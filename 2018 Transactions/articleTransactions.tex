@@ -84,16 +84,15 @@ relation algebra\sep software development\sep legal reasoning\sep information sy
 	For the purpose of discussing history, we introduce a structure that represents a history at one moment in time.
 	A {\em historic structure} is a tuple $\la \Events, \id{prec}\ra$ in which
 \begin{eqnarray}
-	&&\Events\text{ is a finite set of events.}\\
 	&&\id{prec}\ \subseteq\ \Events\times\Events\label{req:precInE}\\
 	&&(e,e)\notin\id{prec}\label{req:prec irreflexive}\\
 	&&(e_1,e_2)\in\id{prec}^+\ \wedge\ (e_2,e_1)\in\id{prec}^+\ \Rightarrow\ e_1=e_2\label{req:precPlus asy}
 \end{eqnarray}
 	Let set $\Events$ represent all events that the DIS has registered up to some point in time.
-	So for every event $e\in\Events$ we can say that it has occured (at some time in the past).
-	Let $e_1\ \id{prec}\ e_2$ represent the fact that event $e_1$ has occured before event $e_2$,
+	So for every event $e\in\Events$ we can say that it has happened (at some time in the past).
+	Let $e_1\ \id{prec}\ e_2$ represent the fact that event $e_1$ has happened before event $e_2$,
 	making $\id{prec}$ a relation on events in $\Events$.
-	For this reason, requirement~\ref{req:prec irreflexive} excludes the situation that $e$ has occured before itself.
+	For this reason, requirement~\ref{req:prec irreflexive} excludes the situation that $e$ has happened before itself.
 	To represent time faithfully, we require that $\la\Events,\id{prec}^*\ra$ is a partially ordered set,
 	meaning that $\id{prec}^*$ is reflexive, transitive, and antisymmetric.
 	For this reason equation~\ref{req:precPlus asy} requires the transitive closure $\id{prec}^+$ to be antisymmetric.
@@ -106,37 +105,42 @@ relation algebra\sep software development\sep legal reasoning\sep information sy
 	Note that any nonempty linear historic structure has one current event.
 	Other historic structures may have more.
 
-	As time passes by, new events occur.
-	We describe each occurrence as a mapping, $\id{occur}_{P,e}$, from one historic structure to another:
+	We describe each time an event $e$ happens as a mapping, $\id{happens}_{P,e}$, from one historic structure to another:
 \begin{equation}
-	\id{occur}_{P,e}(\la \Events, \id{prec}\ra)\ =\ \la \Events\cup\{e\}, \id{prec}\cup\{(e_1,e) | e_1\in P\}\ra
-\label{req:def occur}
+	\id{happens}_{P,e}(\la \Events, \id{prec}\ra)\ =\ \la \Events\cup\{e\}, \id{prec}\cup\{(e_1,e) | e_1\in P\}\ra
+\label{req:def happens}
 \end{equation}
-	The occurrence of $e$ adds one event to $\Events$.
-	It also enlarges relation $\id{prec}$ with one pair for every immediate predecessor of $e$.
+	This happening adds one event to $\Events$ and enlarges relation $\id{prec}$ with one pair for every immediate predecessor of $e$.
 	The immediate predecessors of $e$ are specified in set $P$, which we call the predecessor set.
 	We need the predecessor set to cater for the distributed nature of a DIS.
+
+	If a DIS is initialized with an empty historic structure
+	and it grows by means of $\id{happens}$, i.e. by one event at a time,
+	then at any moment in time it consists of a finite number of events.
+	Therefore, we can safely assume that set $\Events$ is finite in every practical situation.
+
 	In a linear historic structure,
 	$P$ is alway a singleton set.
 	In that case, every event except the first one has precisely one preceding event.
 	In general, however, events may have multiple preceding events and the predecessor set is not necessarily a singleton set.
 \begin{lemma}
-\label{lemma:occur preserves historic structure}
+\label{lemma:happens preserves historic structure}
 	If $h=\la \Events, \id{prec}\ra$ is a historic structure and $P\subseteq\Events$ and $e\notin\Events$
-	then $\id{occur}_{P,e}(h)$ is a historic structure.
+	then $\id{happens}_{P,e}(h)$ is a historic structure.
 \end{lemma}
+	Lemma~\ref{lemma:happens preserves historic structure} says that $\id{happens}_{P,e}$ preserves the historic structure.
 	This lemma has been proven in proof assistant Isabelle/HOL.
 	To understand why $P\subseteq\Events$ is necessary,
-	let $\la \Events', \id{prec}'\ra=\id{occur}_{P,e}(h)$.
+	let $\la \Events', \id{prec}'\ra=\id{happens}_{P,e}(h)$.
 	Now suppose event $e_1\in P$ but $e_1\notin\Events$.
-	Equation~\ref{req:def occur} tells us that $(e_1,e)\in\id{prec}'$.
+	Equation~\ref{req:def happens} tells us that $(e_1,e)\in\id{prec}'$.
 	However, this violates requirement~\ref{req:precInE}.
 	So it is necessary that every $e_1\in P$ is an element of $\Events$.
 	Similarly, $e\notin\Events$ is a necessary condition,
 	because any $e\in\Events$ violates the antisymmetry of $\id{prec}^+$ (requirement~\ref{req:precPlus asy}).
 
-	Note that the occurence of an event can make current events become past events.
-	If $h'=\id{occur}_{P,e}(h)$, the events in $P$ become past events in $h'$ and event $e$ becomes current in $h'$.
+	Note that $\id{happens}_{P,e}$ can make current events become past events.
+	If $h'=\id{happens}_{P,e}(h)$, every event in $P$ becomes a past event in $h'$ and event $e$ becomes current in $h'$.
 
 	Let $h$ and $h'$ be historic structures.
 	We use the subset symbol $\subseteq$ to represent the fact that $h$ is a {\em historic substructure} of $h'$.
@@ -145,62 +149,60 @@ relation algebra\sep software development\sep legal reasoning\sep information sy
 \label{def:historic substructure}
 	\la \Events, \id{prec}\ra\ \subseteq\ \la \Events', \id{prec}'\ra\ \Leftrightarrow\ \Events\subseteq\Events'\ \wedge\ \id{prec}\subseteq\id{prec}'
 \end{equation}
-	Note that $\id{occur}_{P,e}(h)=h'$ implies that $h\subseteq h'$.
+	Note that $\id{happens}_{P,e}(h)=h'$ implies that $h\subseteq h'$.
 
 	Having defined historic structures and the way they grow, let us proceed to determine requirements for states.
 	In the sequel, we will use variables $h$ and $h'$ to denote history structures.
 
 \section{States}
-	This section defines the requirements for predictable behavior of distributed information systems (DIS).
-	First we need to introduce the notion of state.
+	This section defines the requirements for predictable behavior of a distributed information system (DIS).
+	We consider behavior to be predictable if every state can be computed unambiguously from its history.
+	So let us introduce the notion of state.
+
 	Let $\mathbb S$ represent the set of all conceivable states,
 	with one special state $\mathcal I$ that represents the initial state.
-	Let $\id{state}:\Events\rightarrow{\mathbb S}$ be a function that maps every event in a DIS to a state.
-	We pronounce $\id{state}(e)$ as ``the state immediately after event $e$ has occured'',
-	or shorter: ``the state after event $e$''.
-	A {\em current state} of a DIS is the state after a current event of that system
+	A {\em stateful historic structure} (SHS) is a triple $\la\Events, \id{prec}, \id{state}\ra$ in which
+	$\la \Events, \id{prec}\ra$ is a historic structure and $\id{state}:\Events\rightarrow{\mathbb S}$ is a function
+	that maps every event in $\Events$ to a state.
+	Let $s=\id{state}(e)$ represent the fact that $s$ is the state immediately after event $e$ has happened.
+	Or shorter: $s$ is the state after event $e$.
+	Alternatively, we may write $(s,e)\in\id{state}$ because a function is a univalent and total relation
+	(and therefore a set of pairs).
+	A {\em current state} is the state after a current event
 	and a {\em past state} is the state after a past event.
-	
-	Each time a new event occurs, a change of state takes place.
-	To accommodate such changes,
-	we use triples $(e_1,e,\Delta)$ instead of tuples $(e_1,e)$.
-	$\Delta$ represents the change from the state after event $e_1$ to the state after event $e$.
-	Besides an event $e$ and immediate predecessors $P$,
-	it takes a function $\delta$ to represent the change of state between two events:
-\begin{eqnarray}
-	\id{occur}_{P,e,\delta}\la \Events, \id{precd}\ra\ =\ \la \Events\cup\{e\}, \id{precd}\cup\{(e_1,e,\delta(e_1,e)) | e_1\in P\}\ra
-\end{eqnarray}
-	Additionally we require an operator $\oplus$ to compute the next state.
-	This provides the means to define a {\em stateful historic structure} as a tuple $\la \Events, \id{precd}\ra$ in which
-	$\id{precd}$ is a set of triples such that
-\begin{eqnarray}
-	&&\la \Events, \{(e_1,e)| (e_1,e,\Delta)\in\id{precd}\}\ra\text{ is a historic structure.}\\
-	&&(e_1,e,\Delta)\in\id{precd}\ \Rightarrow\ \id{state}(e)=\id{state}(e_1)\oplus\Delta\label{eqn:nextState}\\
-	&&(\exists e_1:(e_1,e,\Delta)\in\id{precd})\ \vee\ \id{state}(e)=\mathcal I\label{eqn:totState}\\
-	&&\begin{array}{@{}l}
-		(e_1,e,\Delta_1)\in\id{precd}\ \wedge\ (e_2,e,\Delta_2)\in\id{precd}\\
-		\ \ \Rightarrow\ \id{state}(e_1)\oplus\Delta_1\ =\ \id{state}(e_2)\oplus\Delta_2\label{eqn:uniState}
-	\end{array}
-\end{eqnarray}
-	Requirement~\ref{eqn:nextState} says that the state of non-initial events can be computed using $\oplus$.
-	Requirement~\ref{eqn:totState} says that the state of an initial event (i.e.\ events without predecessor) is the initial state.
-	Together, requirements~\ref{eqn:nextState} and~\ref{eqn:totState} define the function $\id{state}$ recursively.
-\marginpar{claim}
-	Requirement~\ref{eqn:uniState} ensures that $\id{state}$ is defined unambiguously,
-	meaning that every event in $\Events$ has precisely one state.
-	Thus, states are defined predictably in a DIS.
 
-	We define $\la \Events, \id{precd}\ra$ a {\em stateful historic substructure} of $\la \Events', \id{precd}'\ra$
-	if $\Events\subseteq\Events'$ and $\id{precd}\subseteq\id{precd}'$.
-	We denote this as
+	In a stateful historic structure, the occurrence of an event $e$ requires that $\id{state}(e)$ exists.
+	So we define the occurrence of an event as a mapping, $\id{occurs}_{P,e,s}$, from one SHS to another:
 \begin{equation}
-	\la \Events, \id{precd}\ra\ \subseteq\ \la \Events', \id{precd}'\ra
+\begin{array}{l}
+	\id{occurs}_{P,e,s}(\la \Events, \id{prec}, \id{state}\ra)\\
+	\ =\ \la \Events\cup\{e\},\ \id{prec}\cup\{(e_1,e) | e_1\in P\},\ \id{state}\cup\{(e,s)\}\ra
+\end{array}	
+\label{eqn:def occurs}
 \end{equation}
-\marginpar{claim}
-	Note that $\id{occur}_{P,e,\delta}(h)=h'$ implies that $h\subseteq h'$.
+	In fact, this definition expands the definition of historic structures (eqn.~\ref{req:def happens}).
+	By using lemma~\ref{lemma:happens preserves historic structure} we can prove that $\id{occurs}_{P,e,s}$ preserves
+	the stateful historic structure.
+	Also, we will use the subset symbol $\subseteq$ to represent the fact that $h$ is a {\em stateful historic substructure} of $h'$.
+	And it will come as no surprise that $\id{occurs}_{P,e,s}(h)=h'$ implies that $h\subseteq h'$.
 
-	\marginpar{claim}
-	Can we prove $\oplus$ to be associative, commutative, and idempotent? Why would we do that?
+	Let $\mathbb D$ represent the set of all conceivable state changes.
+	Let $s_2\ominus s_1$ represent the change from state $s_1$ to state $s_2$.
+	Let $\delta(e_1,e_2)$ represent the change $\id{state}(e_2)\ominus\id{state}(e_1)$.
+
+	Each time a new event happens, a change of state takes place.
+	This change is described in the following requirements:
+\begin{eqnarray}
+	&&(\exists e_2:(e_1,e_2)\in\id{prec})\ \vee\ \id{state}(e_1)=\mathcal I\label{eqn:totState}\\
+	&&(e_1,e_2)\in\id{prec}\ \Rightarrow\ \id{state}(e_2)=\id{state}(e_1)\oplus\delta(e_1,e_2)\label{eqn:nextState}
+\end{eqnarray}
+	Requirement~\ref{eqn:totState} says that the state of an initial event (i.e.\ events without predecessor) is the initial state.
+	Requirement~\ref{eqn:nextState} says that the state of non-initial events can be computed using $\oplus$.
+	Together, requirements~\ref{eqn:totState} and~\ref{eqn:nextState} define the function $\id{state}$ recursively.
+\marginpar{claim}
+	So for every finite SHS that has been constructed from the initial state by means of event occurrences,
+	the function $\id{state}$ is defined.
+	This ensures that every event in $\Events$ has precisely one state, which means that states are defined predictably in a DIS.
 
 \section{Bibliography}
 \bibliographystyle{elsarticle-harv}
@@ -238,7 +240,7 @@ relation algebra\sep software development\sep legal reasoning\sep information sy
 	a condition or way of being that exists at a particular time}
 	to describe things that change over time.
 	We shall use variables $s$, $s_1$, and $s_2$ to denote states.
-	Let $\id{state}(e)$ represent the state after event $e$ has occured.
+	Let $\id{state}(e)$ represent the state after event $e$ has happened.
 
 \section{Distributed Information System}
 	
@@ -346,8 +348,8 @@ A relation $\declare{r}{A}{B}$ is a set of tuples. Each tuple $\pair{a}{b}$ in t
 	
 	For simplicity's sake, we assume the user sees a finite set of items at any given moment.
 	The items seen by the user at any moment are given by a relation $\declare{state}{Event}{Item}$,
-	where $\pair{e}{i}\in\id{state}$ means that item $i$ exists immediately after $e$ has occured.
-	So the set of items visible to the user immediately after $e$ has occured can be computed by $\{ i | \pair{e}{i}\in\id{state} \}$.
+	where $\pair{e}{i}\in\id{state}$ means that item $i$ exists immediately after $e$ has happened.
+	So the set of items visible to the user immediately after $e$ has happened can be computed by $\{ i | \pair{e}{i}\in\id{state} \}$.
 	Note that the relation $\id{state}$ is interpreted in an open world.
 	If $\pair{e}{i}\not\in\id{state}$ this does not mean $i$ does not exist.
 	It just means that the pair $\pair{e}{i}$ is not in $\id{state}$, so the user will not see it.
@@ -357,7 +359,7 @@ A relation $\declare{r}{A}{B}$ is a set of tuples. Each tuple $\pair{a}{b}$ in t
 	where $\pair{e}{i}\in\id{ins}$ means that pair $\pair{e}{i}$ is to be added to $\id{state}$,
 	and $\pair{e}{i}\in\id{del}$ means that pair $\pair{e}{i}$ is to be removed from $\id{state}$.
 	More precisely, let us consider an event $e$.
-	The items $\{ i | \pair{e}{i}\in\id{state} \}$ are the items that exist immediately after the preceding event has occured,
+	The items $\{ i | \pair{e}{i}\in\id{state} \}$ are the items that exist immediately after the preceding event has happened,
 	minus the items to be removed, plus the items to be inserted.
 	The following equation defines this \define{behaviour}:
 \begin{equation}
