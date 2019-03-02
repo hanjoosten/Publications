@@ -1,1 +1,5 @@
 articleRamics.pdf
+*.aux
+*.log
+*/article*.pdf
+*.synctex.gz
