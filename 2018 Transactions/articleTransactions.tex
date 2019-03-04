@@ -96,6 +96,9 @@ relation algebra\sep software development\sep legal reasoning\sep information sy
 	To represent time faithfully, we require that $\la\Events,\id{prec}^*\ra$ is a partially ordered set,
 	meaning that $\id{prec}^*$ is reflexive, transitive, and antisymmetric.
 	For this reason equation~\ref{req:precPlus asy} requires the transitive closure $\id{prec}^+$ to be antisymmetric.
+	In the sequel, we will use predicate $\id{HS}\la \Events, \id{prec}\ra$
+	to denote that $\la \Events, \id{prec}\ra$ is a historic structure
+	and we will use variables $h$ and $h'$ to denote historic structures.
 
 	In a historic structure $\la \Events, \id{prec}\ra$, an event $e$ that precedes another event is called a {\em past} event,
 	which we define as \ $\exists e_1\in\Events: e\ \id{prec}\ e_1$.
@@ -104,6 +107,8 @@ relation algebra\sep software development\sep legal reasoning\sep information sy
 	The special case in which $\id{prec}^*$ is a total order is called a {\em linear historic structure}.
 	Note that any nonempty linear historic structure has one current event.
 	Other historic structures may have more.
+	In a linear historic structure, every event except the first one has precisely one preceding event.
+	In general, however, events may have multiple preceding events and multiple succeeding events.
 
 	We describe each time an event $e$ happens as a mapping, $\id{happens}_{P,e}$, from one historic structure to another:
 \begin{equation}
@@ -114,15 +119,6 @@ relation algebra\sep software development\sep legal reasoning\sep information sy
 	The immediate predecessors of $e$ are specified in set $P$, which we call the predecessor set.
 	We need the predecessor set to cater for the distributed nature of a DIS.
 
-	If a DIS is initialized with an empty historic structure
-	and it grows by means of $\id{happens}$, i.e. by one event at a time,
-	then at any moment in time it consists of a finite number of events.
-	Therefore, we can safely assume that set $\Events$ is finite in every practical situation.
-
-	In a linear historic structure,
-	$P$ is alway a singleton set.
-	In that case, every event except the first one has precisely one preceding event.
-	In general, however, events may have multiple preceding events and the predecessor set is not necessarily a singleton set.
 \begin{lemma}
 \label{lemma:happens preserves historic structure}
 	If $h=\la \Events, \id{prec}\ra$ is a historic structure and $P\subseteq\Events$ and $e\notin\Events$
@@ -139,6 +135,21 @@ relation algebra\sep software development\sep legal reasoning\sep information sy
 	Similarly, $e\notin\Events$ is a necessary condition,
 	because any $e\in\Events$ violates the antisymmetry of $\id{prec}^+$ (requirement~\ref{req:precPlus asy}).
 
+	Together with an empty historic structure, $\la \emptyset, \emptyset\ra$,
+	we can define a historic structure recursively by means of $\id{happens}$:
+\begin{eqnarray}
+	&&\id{HS}\la \emptyset, \emptyset\ra\label{def:zeroHS}\\
+&&\begin{array}{@{}l}
+	P\subseteq\Events\ \wedge\ e\notin E\ \wedge\ \id{HS}\la \Events, \id{prec}\ra\ \Rightarrow\ \id{HS}(\id{happens}_{P,e}\la \Events, \id{prec}\ra)
+\end{array}
+\label{req:recursive def happens}
+\end{eqnarray}
+	Equation~\ref{def:zeroHS} says that $\la \emptyset, \emptyset\ra$ is a historic structure.
+	Equation~\ref{req:recursive def happens} specifies recursively that $\id{happens}_{P,e}(h)$ is a historic structure iff
+	$h$ is a historic structure and if $P$ and $e$ satisfy the specified conditions.
+	This definition allows us to prove properties of finite historic structures by induction.
+	In practical situations, every historic structure is finite.
+
 	Note that $\id{happens}_{P,e}$ can make current events become past events.
 	If $h'=\id{happens}_{P,e}(h)$, every event in $P$ becomes a past event in $h'$ and event $e$ becomes current in $h'$.
 
@@ -152,27 +163,28 @@ relation algebra\sep software development\sep legal reasoning\sep information sy
 	Note that $\id{happens}_{P,e}(h)=h'$ implies that $h\subseteq h'$.
 
 	Having defined historic structures and the way they grow, let us proceed to determine requirements for states.
-	In the sequel, we will use variables $h$ and $h'$ to denote history structures.
 
 \section{States}
 	This section defines the requirements for predictable behavior of a distributed information system (DIS).
 	We consider behavior to be predictable if every state can be computed unambiguously from its history.
 	So let us introduce the notion of state.
 
-	Let $\mathbb S$ represent the set of all conceivable states,
-	with one special state $\mathcal I$ that represents the initial state.
-	A {\em stateful historic structure} (SHS) is a triple $\la\Events, \id{prec}, \id{state}\ra$ in which
+	Let $\mathbb S$ represent the set of all conceivable states.
+	A {\em stateful historic structure} is a triple $\la\Events, \id{prec}, \id{state}\ra$ in which
 	$\la \Events, \id{prec}\ra$ is a historic structure and $\id{state}:\Events\rightarrow{\mathbb S}$ is a function
 	that maps every event in $\Events$ to a state.
+	We will use predicate $\id{SHS}\la \Events, \id{prec}, \id{state}\ra$
+	to express that $\la \Events, \id{prec}, \id{state}\ra$ is a stateful historic structure.
 	Let $s=\id{state}(e)$ represent the fact that $s$ is the state immediately after event $e$ has happened.
 	Or shorter: $s$ is the state after event $e$.
-	Alternatively, we may write $(s,e)\in\id{state}$ because a function is a univalent and total relation
+	Instead of $s=\id{state}(e)$, we may also write $(s,e)\in\id{state}$ because a function is a univalent and total relation
 	(and therefore a set of pairs).
 	A {\em current state} is the state after a current event
 	and a {\em past state} is the state after a past event.
 
-	In a stateful historic structure, the occurrence of an event $e$ requires that $\id{state}(e)$ exists.
-	So we define the occurrence of an event as a mapping, $\id{occurs}_{P,e,s}$, from one SHS to another:
+	In a stateful historic structure, the occurrence of an event $e$ defines a new historic structure.
+	This is the way systems evolve over time.
+	So we define the occurrence of an event as a mapping, $\id{occurs}_{P,e,s}$, from one SHS to another SHS:
 \begin{equation}
 \begin{array}{l}
 	\id{occurs}_{P,e,s}(\la \Events, \id{prec}, \id{state}\ra)\\
@@ -185,24 +197,68 @@ relation algebra\sep software development\sep legal reasoning\sep information sy
 	the stateful historic structure.
 	Also, we will use the subset symbol $\subseteq$ to represent the fact that $h$ is a {\em stateful historic substructure} of $h'$.
 	And it will come as no surprise that $\id{occurs}_{P,e,s}(h)=h'$ implies that $h\subseteq h'$.
-
-	Let $\mathbb D$ represent the set of all conceivable state changes.
-	Let $s_2\ominus s_1$ represent the change from state $s_1$ to state $s_2$.
-	Let $\delta(e_1,e_2)$ represent the change $\id{state}(e_2)\ominus\id{state}(e_1)$.
-
-	Each time a new event happens, a change of state takes place.
-	This change is described in the following requirements:
+	To describe the growth of a stateful historic structure we can define stateful historic structures recursively:
 \begin{eqnarray}
-	&&(\exists e_2:(e_1,e_2)\in\id{prec})\ \vee\ \id{state}(e_1)=\mathcal I\label{eqn:totState}\\
-	&&(e_1,e_2)\in\id{prec}\ \Rightarrow\ \id{state}(e_2)=\id{state}(e_1)\oplus\delta(e_1,e_2)\label{eqn:nextState}
+	&&\id{SHS}\la \emptyset, \emptyset, \emptyset\ra\\
+&&\begin{array}{@{}l}
+	P\subseteq\Events\ \wedge\ e\notin E\ \wedge\ \id{SHS}\la \Events, \id{prec}, \id{state}\ra\\
+	\ \ \Rightarrow\ \id{SHS}(\id{occurs}_{P,e,s}\la \Events, \id{prec}, \id{state}\ra)
+\end{array}
+\label{req:recursive def occurs}
 \end{eqnarray}
-	Requirement~\ref{eqn:totState} says that the state of an initial event (i.e.\ events without predecessor) is the initial state.
-	Requirement~\ref{eqn:nextState} says that the state of non-initial events can be computed using $\oplus$.
-	Together, requirements~\ref{eqn:totState} and~\ref{eqn:nextState} define the function $\id{state}$ recursively.
-\marginpar{claim}
-	So for every finite SHS that has been constructed from the initial state by means of event occurrences,
-	the function $\id{state}$ is defined.
-	This ensures that every event in $\Events$ has precisely one state, which means that states are defined predictably in a DIS.
+
+\section{Transactions}
+\label{sct:Transactions}
+	Information systems can register changes (as opposed to states) to avoid duplicating most of a previous state into a new state.
+	Such changes are called {\em transactions}.
+	For the purpose of computing a new state ($s_2$) from a given state ($s_1$),
+	we need two operators, $\oplus$ and $\ominus$, such that
+\begin{equation}
+	s_2\ =\ s_1\oplus(s_2\ominus s_1)
+\label{req:oplus and ominus}
+\end{equation}
+	Let us call $s_2\ominus s_1$ the difference between states $s_2$ and $s_1$.
+	In a stateful historic structure we can represent transactions by means of a function $\delta$,
+	where $\delta(e_1,e_2)$ represents the change of state from event $e_1$ to $e_2$.
+\begin{equation}
+	\delta(e_1,e_2)\ =\ \id{state}(e_2)\ominus\id{state}(e_1)
+\label{def:delta}
+\end{equation}
+	The transaction caused by event $e$ can be described by:
+\begin{equation}
+	h'=\id{occurs}_{P,e,s}(h)\ \Rightarrow\ \begin{array}[t]{@{}ll}
+		\id{state}(e)\ =\ s&\wedge\\
+		\forall e_1\in P: s\ =\ \id{state}(e_1)\oplus\delta(e_1,e)
+	\end{array}
+\label{req:transaction}
+\end{equation}
+	We can define transactions recursively, in which we designate one specific state,
+	$\mathcal I\in\mathbb S$,
+	as initial state.
+\begin{equation}
+\begin{array}{l}
+	e\notin\Events\ \wedge\ P\subseteq\Events\ \Rightarrow\\
+	\id{trans}_{P,e_1,e,\Delta}(\la\Events, \id{prec}, \id{state}\ra)\\
+	\ \ =\ \begin{array}[t]{@{}l@{}c@{}ll}
+		\text{Let }s_1&=&\id{state}(e_1)\text{,}&\text{if }e_1\in P\\
+				&=&\mathcal I\text{,}&\text{otherwise}\\
+		\multicolumn{4}{@{}l}{\text{in }\la\Events\cup\{e\}, \id{prec}\cup\{(e_2,e)|e_2\in P\}, \id{state}\cup\{(e,s_1\oplus\Delta)\}\ra}
+		\end{array}
+\end{array}
+\label{req:recursive transaction}
+\end{equation}
+		
+
+\section{Atomicity}
+\label{sct:Atomicity}
+	{\em Atomicity} means that a state change caused by a sequence of events can be reproduced as a single event.
+
+	So let us first discuss event sequences.
+	Let us define an event sequence as a totally ordered historic structure.
+	Note that a historic structure that is not totally ordered may contain multiple historic substructures
+	that are totally ordered.
+	Typically, event sequences occur multiply in a historic structure.
+
 
 \section{Bibliography}
 \bibliographystyle{elsarticle-harv}
@@ -298,11 +354,6 @@ relation algebra\sep software development\sep legal reasoning\sep information sy
 		With $\preceq$ being reflexive, antisymmetric, and transitive,
 		it follows immediately that $\oplus$ is idempotent, commutative, and associative.
 	\end{itemize}
-
-\section{Atomicity}
-\label{sct:Atomicity}
-	{\em Atomicity} means that multiple primitive actions are executed as one.
-	So let us first define the notion of atomic action.
 
 \section{Consistency}
 \label{sct:Consistency}
