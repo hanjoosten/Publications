@@ -77,6 +77,9 @@ relation algebra\sep software development\sep legal reasoning\sep information sy
 \label{sct:Related work}
 \cite{Foster17c}
 
+	An interesting read is {\tt\small https://towardsdatascience.com/distributed-transactions-and-why-you-should-care-116b6da8d72}.
+	It explains how modern distributed database cope with ACID properties in a was that makes sense.
+
 \section{Events}
 \label{sct:Events}
 	We need the notion of {\em event}\footnote{Cambridge Dictionary defines ``event'' as: anything that happens} to describe things that happen in a DIS.
@@ -200,7 +203,10 @@ relation algebra\sep software development\sep legal reasoning\sep information sy
 	the stateful history structure.
 	Also, we will use the subset symbol $\subseteq$ to represent the fact that $h$ is a {\em stateful historic substructure} of $h'$.
 	And it will come as no surprise that $\id{occurs}_{P,e,s}(h)=h'$ implies that $h\subseteq h'$.
-	To describe the growth of a stateful history structure we can define stateful history structures recursively:
+	We will use predicate $\id{SHS}\la \Events, \id{prec}, \id{state}\ra$
+	to express that $\la \Events, \id{prec}, \id{state}\ra$ is a stateful history structure.
+	To describe the growth of a stateful history structure by the event,
+	we define $\id{SHS}$ recursively using $\id{occurs}_{P,e,s}$ as recurring step:
 \begin{eqnarray}
 	&&\id{SHS}\la \emptyset, \emptyset, \emptyset\ra\\
 &&\begin{array}{@{}l}
@@ -227,7 +233,7 @@ relation algebra\sep software development\sep legal reasoning\sep information sy
 	\delta(e_1,e_2)\ =\ \id{state}(e_2)\ominus\id{state}(e_1)
 \label{def:delta}
 \end{equation}
-	The transaction caused by event $e$ can be described by:
+	A transaction caused by event $e$ can be described by:
 \begin{eqnarray}
 &&	h'=\id{occurs}_{P,e,s}(h)\ \Rightarrow\ \begin{array}[t]{@{}ll}
 		\id{state}(e)\ =\ s&\wedge\\
@@ -264,24 +270,15 @@ relation algebra\sep software development\sep legal reasoning\sep information sy
 
 	At this point, let us reflect on storage.
 	If we store a stateful history structure entirely,
-	one state is added to the storage for every event in $\Events$.
-	However, if changes are on average much smaller than states, it can be more economical to store only the changes.
-	The following mapping transforms a stateful history structure to an incremental history structure:
-\begin{eqnarray}
-&&\begin{array}{l}
-	\id{shs2ihs}(\la\Events, \id{prec}, \id{state}\ra)\\
-	\ \ =\ \begin{array}[t]{@{}l}
-		\text{Let }\forall(e_1,e_2)\in\id{prec}:\ \delta(e_1,e_2)=\id{state}(e_2)\ominus\id{state}(e_1)\\
-		\text{Let }\id{initial}=\{e\in\Events|\forall e_1\in\Events: (e_1,e)\notin\id{prec}\}\\
-		\text{Let }\forall e\in\id{initial}:\ \iota(e)=\id{state}(e)\ominus\mathcal I\\
-		\text{in }\la\Events, \id{prec}, \delta, \iota\ra
-		\end{array}
-\end{array}
-\label{req:shs2ihs}
-\end{eqnarray}
-	If we want to build an IHS event-by-event, we need an incremental definition.
-	For this purpose we define an {\em incremental history structure} ($\id{IHS}$)
+	one state is added to the total storage requirement for every event in $\Events$.
+	However, if the average change is typically smaller than the average state, it can be more economical to store only the changes.
+	For this purpose we define an incremental history structure (IHS)
 	as a history structure that ``stores'' changes instead of states.
+	A {\em incremental history structure} is a quadruple $\la\Events, \id{prec}, \delta, \iota\ra$ in which
+	$\la \Events, \id{prec}\ra$ is a history structure,
+	$\delta(e_1,e_2)$ represents the change $\id{state}(e_2)\ominus\id{state}(e_1)$ for every pair $(e_1,e_2)\in\id{prec}$ (equation~\ref{def:delta}),
+	and $\iota(e)$ represents the change $\id{state}(e_1)\ominus\mathcal I$ for every event $e\in\Events$ that has no predecessor in $\id{prec}$.
+	Since histories are built event-by-event, we give an incremental definition.
 	The following mapping, $\id{increment}_{P,e_1,e,\Delta,\iota}$,
 	adds one event ($e$) to an IHS:
 \begin{eqnarray}
@@ -298,7 +295,17 @@ relation algebra\sep software development\sep legal reasoning\sep information sy
 \end{array}
 \label{req:increment}
 \end{eqnarray}
-	This mapping can be used as recursive step in the following (recursive) definition of predicate $\id{IHS}$, which characterizes an incremental history structure:
+	This definition inserts a new event, $e$, into a history structure with $e_1$ as its predecessor.
+	The new state, $\id{state}(e)$, is computed by $\id{state}(e_1)\oplus\Delta$; let us call it $s$.
+	Beside $e_1$, there may be other events preceding $e$ in the predecessor set $P$.
+	The change from every predecessor $x$ can be computed by $s\ominus\id{state}(x)$.
+	All these changes are added to the function $\delta$.
+	The function $\iota$ is there for initialization purposes.
+	To get an initial history structure (with no events in it) going,
+	we must add events while there are no other events available as predecessor.
+	We use the empty predecessor set as condition to signal that there is no previous state.
+	The mapping $\id{increment}_{P,e_1,e,\Delta}$ can be used as recursive step in defining predicate $\id{IHS}$,
+	which characterizes an incremental history structure:
 \begin{eqnarray}
 	&&\id{IHS}\la \emptyset, \emptyset, \emptyset, \emptyset\ra\\
 &&\begin{array}{@{}l}
@@ -307,10 +314,39 @@ relation algebra\sep software development\sep legal reasoning\sep information sy
 \end{array}
 \label{req:recursive def IHS}
 \end{eqnarray}
-		
+The following mapping transforms a stateful history structure to an incremental history structure:
+\begin{eqnarray}
+&&\begin{array}{l}
+	\id{shs2ihs}(\la\Events, \id{prec}, \id{state}\ra)\\
+	\ \ =\ \begin{array}[t]{@{}l}
+		\text{Let }\forall(e_1,e_2)\in\id{prec}:\ \delta(e_1,e_2)=\id{state}(e_2)\ominus\id{state}(e_1)\\
+		\text{Let }\id{initial}=\{e\in\Events|\forall e_1\in\Events: (e_1,e)\notin\id{prec}\}\\
+		\text{Let }\forall e\in\id{initial}:\ \iota(e)=\id{state}(e)\ominus\mathcal I\\
+		\text{in }\la\Events, \id{prec}, \delta, \iota\ra
+		\end{array}
+\end{array}
+\label{req:shs2ihs}
+\end{eqnarray}
+	Vice versa, we can also map an incremental history structure to a stateful history structure:
+\begin{eqnarray}
+&&\begin{array}{l}
+	\id{ihs2shs}(\la\Events, \id{prec}, \delta, \iota\ra)\\
+	\ \ =\ \begin{array}[t]{@{}l}
+		\text{Let }\forall(e_1,e_2)\in\id{prec}:\ \id{state}(e_2)=\id{state}(e_1)\oplus\delta(e_1,e_2)\\
+		\text{Let }\id{initial}=\{e\in\Events|\forall e_1\in\Events: (e_1,e)\notin\id{prec}\}\\
+		\text{Let }\forall e\in\id{initial}:\ \id{state}(e)=\mathcal I\oplus\iota(e)\\
+		\text{in }\la\Events, \id{prec}, \id{state}\ra
+		\end{array}
+\end{array}
+\label{req:ihs2shs}
+\end{eqnarray}
+	The\marginpar{claim} fact that $\id{shs2ihs}$ and $\id{ihs2shs}$ are each other's inverse proves that the choice to represent
+	history by an IHS or SHS can be made on practical grounds.
+
 \section{Atomicity}
 \label{sct:Atomicity}
-	{\em Atomicity} means that a state change caused by a sequence of events can be reproduced as a single event.
+	{\em Atomicity} guarantees all-or-nothing outcomes.
+	It means that the overall state change caused by a sequence of events can be committed as a whole or rejected completely.
 
 	So let us first discuss event sequences.
 	Let us define an event sequence as a totally ordered history structure.
