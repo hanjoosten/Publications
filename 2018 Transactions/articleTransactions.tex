@@ -48,7 +48,8 @@ relation algebra\sep software development\sep legal reasoning\sep information sy
 
 \section{Introduction}
 \label{sct:Introduction}
-	A distributed information system (DIS) serves its users by registering data, guarding the consistency, protecting the data,
+	A distributed information system (DIS) serves its users with things such as
+	registering data, guarding the consistency, protecting the data,
 	and providing that data accurately and meaningfully for its intended purpose.
 	Users want predictable behaviour when they are simultaneously changing a shared state (e.g.\ flight reservation).
 	For that purpose a transaction mechanism preserves system-wide invariants.
@@ -77,17 +78,24 @@ relation algebra\sep software development\sep legal reasoning\sep information sy
 \label{sct:Related work}
 \cite{Foster17c}
 
-	An interesting read is {\tt\small https://towardsdatascience.com/distributed-transactions-and-why-you-should-care-116b6da8d72}.
-	It explains how modern distributed database cope with ACID properties in a was that makes sense.
+	An interesting read is~\cite{Foster17c}\footnote{\tt\tiny https://towardsdatascience.com/distributed-transactions-and-why-you-should-care-116b6da8d72}.
+	It explains how modern distributed database cope with ACID properties in a way that makes sense.
 
-\section{Events}
-\label{sct:Events}
+	ACID 2.0 - Associative, Commutative, Idempotent, Distributed
+
+\section{History}
+\label{sct:History}
+	Distributed information systems are dynamic systems,
+	so time is the first aspect we focus on.
+	In this paper we simplify the notion of time to precedence of events,
+	allowing us to study the evolution over time by events that happen.
 	We need the notion of {\em event}\footnote{Cambridge Dictionary defines ``event'' as: anything that happens} to describe things that happen in a DIS.
-	Let us study the requirements for events in formal terms.
 	In this work we use variables $e$, $e_1$, and $e_2$ to represent events.
 	Let $\mathbb E$ represent the set of all conceivable events.
-
-	For the purpose of discussing history, we introduce a structure that represents a history at one moment in time.
+	We also introduce the notion of {\em history structure}
+	to represent all events that have happend up to some point in time and the precedences between those events.
+	In this paper, variables $h$, $h'$, $h_1$, and $h_2$ represent history structures.
+	Let $\mathbb H$ be the set of all conceivable history structures.
 	A {\em history structure} is a tuple $\la \Events, \id{prec}\ra$ in which
 \begin{eqnarray}
 	&&\id{prec}\ \subseteq\ \Events\times\Events\label{req:precInE}\\
@@ -98,39 +106,44 @@ relation algebra\sep software development\sep legal reasoning\sep information sy
 	So for every event $e\in\Events$ we can say that it has happened (at some time in the past).
 	Let $e_1\ \id{prec}\ e_2$ represent the fact that event $e_1$ has happened before event $e_2$,
 	making $\id{prec}$ a relation on events in $\Events$.
-	For this reason, requirement~\ref{req:prec irreflexive} excludes the situation that $e$ has happened before itself.
+	Requirement~\ref{req:prec irreflexive} excludes the situation that $e$ has happened before itself.
 	To represent time faithfully, we require that $\la\Events,\id{prec}^*\ra$ is a partially ordered set,
 	meaning that $\id{prec}^*$ is reflexive, transitive, and antisymmetric.
 	For this reason equation~\ref{req:precPlus asy} requires the transitive closure $\id{prec}^+$ to be antisymmetric.
-	In the sequel, we will use predicate $\id{HS}\la \Events, \id{prec}\ra$
-	to denote that $\la \Events, \id{prec}\ra$ is a history structure
-	and we will use variables $h$ and $h'$ to denote history structures.
+
+	The special case in which $\la\Events,\id{prec}^*\ra$ is a total order is called a {\em sequential history structure}.
+	Note that any nonempty finite sequential history structure has one current event and one first event.
+	Other finite history structures may have more.
+	In a sequential history structure, every event except the first one has precisely one preceding event.
+	In general, however, events may have multiple preceding events and multiple succeeding events.
 
 	In a history structure $\la \Events, \id{prec}\ra$, an event $e$ that precedes another event is called a {\em past} event,
 	which we define as \ $\exists e_1\in\Events: e\ \id{prec}\ e_1$.
 	All other events are called {\em current} events in that history structure.
+	Events in $\Events$ that have no preceding events are called {\em first} events.
 
-	The special case in which $\id{prec}^*$ is a total order is called a {\em linear history structure}.
-	Note that any nonempty linear history structure has one current event.
-	Other history structures may have more.
-	In a linear history structure, every event except the first one has precisely one preceding event.
-	In general, however, events may have multiple preceding events and multiple succeeding events.
-
+\section{Growth}
+\label{sct:Growth}
+	A DIS grows by adding events to it.
 	We describe each time an event $e$ happens as a mapping, $\id{happens}_{P,e}$, from one history structure to another:
 \begin{equation}
-	\id{happens}_{P,e}(\la \Events, \id{prec}\ra)\ =\ \la \Events\cup\{e\}, \id{prec}\cup\{(e_1,e) | e_1\in P\}\ra
+\begin{array}{l}
+	P\subseteq\Events\ \wedge\ e\notin E\\
+	\ \ \Rightarrow\ \ \id{happens}_{P,e}(\la \Events, \id{prec}\ra)\ =\ \la \Events\cup\{e\}, \id{prec}\cup\{(e_1,e) | e_1\in P\}\ra
+\end{array}
 \label{req:def happens}
 \end{equation}
 	This happening adds one event to $\Events$ and enlarges relation $\id{prec}$ with one pair for every immediate predecessor of $e$.
 	The immediate predecessors of $e$ are specified in set $P$, which we call the predecessor set.
 	We need the predecessor set to cater for the distributed nature of a DIS.
-
 \begin{lemma}
 \label{lemma:happens preserves history structure}
-	If $h=\la \Events, \id{prec}\ra$ is a history structure and $P\subseteq\Events$ and $e\notin\Events$
-	then $\id{happens}_{P,e}(h)$ is a history structure.
+	If $\la \Events, \id{prec}\ra$ is a history structure and $P\subseteq\Events$ and $e\notin\Events$
+	then $\id{happens}_{P,e}(\la \Events, \id{prec}\ra)$ is a history structure.
 \end{lemma}
-	Lemma~\ref{lemma:happens preserves history structure} says that $\id{happens}_{P,e}$ preserves the history structure.
+	Lemma~\ref{lemma:happens preserves history structure} is a preservation property.
+	It says that $\id{happens}_{P,e}$ preserves the history structure,
+	provided that $P\subseteq\Events$ and $e\notin\Events$.
 	This lemma has been proven in proof assistant Isabelle/HOL.
 	To understand why $P\subseteq\Events$ is necessary,
 	let $\la \Events', \id{prec}'\ra=\id{happens}_{P,e}(h)$.
@@ -141,39 +154,56 @@ relation algebra\sep software development\sep legal reasoning\sep information sy
 	Similarly, $e\notin\Events$ is a necessary condition,
 	because any $e\in\Events$ violates the antisymmetry of $\id{prec}^+$ (requirement~\ref{req:precPlus asy}).
 
-	Together with an empty history structure, $\la \emptyset, \emptyset\ra$,
-	we can define a history structure recursively by means of $\id{happens}$:
+	We extend the notion of subset to historic structures and use the subset symbol $\subseteq$ for that purpose.
+	Let us represent the fact that $h$ is a {\em historic substructure} of $h'$ by:
+\begin{equation}
+\label{def:historic substructure}
+	\la \Events, \id{prec}\ra\ \subseteq\ \la \Events', \id{prec}'\ra\ \Leftrightarrow\ \Events\subseteq\Events'\ \wedge\ \id{prec}\subseteq\id{prec}'
+\end{equation}
+	From lemma~\ref{lemma:happens preserves history structure} we can prove that $\id{happens}_{P,e}(h)=h'$ implies that $h\subseteq h'$.
+
+	Let us define predicate $\id{HS}\la \Events, \id{prec}\ra$
+	to denote that $\la \Events, \id{prec}\ra$ is a history structure.
 \begin{eqnarray}
 	&&\id{HS}\la \emptyset, \emptyset\ra\label{def:zeroHS}\\
 &&\begin{array}{@{}l}
 	P\subseteq\Events\ \wedge\ e\notin E\ \wedge\ \id{HS}\la \Events, \id{prec}\ra\ \Rightarrow\ \id{HS}(\id{happens}_{P,e}\la \Events, \id{prec}\ra)
 \end{array}
-\label{req:recursive def happens}
+\label{def:HS}
 \end{eqnarray}
 	Equation~\ref{def:zeroHS} says that $\la \emptyset, \emptyset\ra$ is a history structure.
-	Equation~\ref{req:recursive def happens} specifies recursively that $\id{happens}_{P,e}(h)$ is a history structure iff
+	Equation~\ref{def:HS} specifies recursively that $\id{happens}_{P,e}(h)$ is a history structure iff
 	$h$ is a history structure and if $P$ and $e$ satisfy the specified conditions.
 	This definition allows us to prove properties of finite history structures by induction.
 	In practical situations, every history structure is finite.
 
 	Note that $\id{happens}_{P,e}$ can make current events become past events.
-	If $h'=\id{happens}_{P,e}(h)$, every event in $P$ becomes a past event in $h'$ and event $e$ becomes current in $h'$.
+	If $h'=\id{happens}_{P,e}(h)$, every event in $P$ is a past event in $h'$ and event $e$ becomes current in $h'$.
 
-	Let $h$ and $h'$ be history structures.
-	We use the subset symbol $\subseteq$ to represent the fact that $h$ is a {\em historic substructure} of $h'$.
-	This is defined as:
+	Let us reconsider the relation $\id{prec}$ for a moment and define $\preceq$ as follows:
+	Requirement~\ref{req:precPlus asy} from section~\ref{sct:History} ensures that $\preceq$ is reflexive, antisymmetric, and transitive.
+	Let us introduce operator $\curlyvee$ (the {\em meet} of two events)
 \begin{equation}
-\label{def:historic substructure}
-	\la \Events, \id{prec}\ra\ \subseteq\ \la \Events', \id{prec}'\ra\ \Leftrightarrow\ \Events\subseteq\Events'\ \wedge\ \id{prec}\subseteq\id{prec}'
+	e\ =\ e_1\curlyvee e_2\ \ \Leftrightarrow\ \ e\ \preceq\ e_1\ \wedge\ e\ \preceq\ e_2
 \end{equation}
-	Note that $\id{happens}_{P,e}(h)=h'$ implies that $h\subseteq h'$.
+	If $\la \Events, \id{prec}, \id{state}\ra$ satisfies definition~\ref{req:recursive def occurs},
+	we can prove
+\begin{equation}
+		e_1,e_2\in\Events\ \Rightarrow\ (e_1\curlyvee e_2)\in\Events
+\end{equation}
+	This means that $\la\Events,\preceq\ra$ is an order-theoretic meet-semilattice.
+	From order theory, we know that $\curlyvee$ is idempotent, commutative, and associative.
+
 
 	Having defined history structures and the way they grow, let us proceed to determine requirements for states.
 
 \section{States}
 	This section defines the requirements for predictable behavior of a distributed information system (DIS).
 	We consider behavior to be predictable if every state can be computed unambiguously from its history.
-	So let us introduce the notion of state.
+	For that purpose we introduce the notion of state.
+
+	A history structure can be perceived as the (global) state of an information system at any point in time,
+	even though that global state is observable only in its local parts.
 
 	Let $\mathbb S$ represent the set of all conceivable states.
 	A {\em stateful history structure} is a triple $\la\Events, \id{prec}, \id{state}\ra$ in which
@@ -198,7 +228,7 @@ relation algebra\sep software development\sep legal reasoning\sep information sy
 \end{array}	
 \label{eqn:def occurs}
 \end{equation}
-	This definition expands the definition of $\id{happens}$ (eqn.~\ref{req:def happens}).
+	This definition extends the definition of $\id{happens}$ (eqn.~\ref{req:def happens}).
 	By using lemma~\ref{lemma:happens preserves history structure} we can prove that $\id{occurs}_{P,e,s}$ preserves
 	the stateful history structure.
 	Also, we will use the subset symbol $\subseteq$ to represent the fact that $h$ is a {\em stateful historic substructure} of $h'$.
@@ -218,15 +248,17 @@ relation algebra\sep software development\sep legal reasoning\sep information sy
 
 \section{Transactions}
 \label{sct:Transactions}
-	Information systems can register changes (as opposed to states) to avoid duplicating most of a previous state into a new state.
+	In practice, a new state is computed from the current state by specifying a change, $\Delta$.
 	Such changes are called {\em transactions}.
-	For the purpose of computing a new state ($s_2$) from a given state ($s_1$),
-	we need two operators, $\oplus$ and $\ominus$, such that
+	To describe a DIS in terms of changes, we need operators to compute a new state ($s_2$) from a given state ($s_1$).
+	In fact, we need two operators, $\oplus$ and $\ominus$, such that
 \begin{equation}
 	s_2\ =\ s_1\oplus(s_2\ominus s_1)
 \label{req:oplus and ominus}
 \end{equation}
 	Let us call $s_2\ominus s_1$ the difference between states $s_2$ and $s_1$.
+	This difference represents a change.
+	We use $s_1\oplus\Delta$ to compute a new state from an existing state $s_1$ and a change $\Delta$.
 	In a stateful history structure we can represent transactions by means of a function $\delta$,
 	where $\delta(e_1,e_2)$ represents the change of state from event $e_1$ to $e_2$.
 \begin{equation}
@@ -245,11 +277,11 @@ relation algebra\sep software development\sep legal reasoning\sep information sy
 	in which the state after every event is computed from a change, $\Delta$.
 	For this purpose we must designate one specific state, $\mathcal I\in\mathbb S$, as the initial state.
 	We must additionally specify an existing event $e_1$ in order to compute $\id{state}(e_1)\oplus\Delta$.
-	The following mapping $\id{occurByDelta}_{P,e_1,e,\Delta}$ defines how an SHS grows by one event ($e$)
+	The following mapping $\id{occurByDelta}_{P,e_1,\Delta,e}$ defines how an SHS grows by one event ($e$)
 	using only the change between the state of event $e_1$ to the new event $e$:
 \begin{eqnarray}
 &&\begin{array}{l}
-	\id{occurByDelta}_{P,e_1,e,\Delta}(\la\Events, \id{prec}, \id{state}\ra)\\
+	\id{occurByDelta}_{P,e_1,\Delta,e}(\la\Events, \id{prec}, \id{state}\ra)\\
 	\ \ =\ \begin{array}[t]{@{}l@{}c@{}ll}
 		\text{Let }s_1&=&\id{state}(e_1)\text{,}&\text{if }e_1\in P\\
 				&=&\mathcal I\text{,}&\text{otherwise}\\
@@ -263,35 +295,35 @@ relation algebra\sep software development\sep legal reasoning\sep information sy
 	&&\id{SHS}\la \emptyset, \emptyset, \emptyset\ra\\
 &&\begin{array}{@{}l}
 	P\subseteq\Events\ \wedge\ e\notin E\ \wedge\ \id{SHS}\la \Events, \id{prec}, \id{state}\ra\\
-	\ \ \Rightarrow\ \id{SHS}(\id{occurByDelta}_{P,e_1,e,\Delta}\la \Events, \id{prec}, \id{state}\ra)
+	\ \ \Rightarrow\ \id{SHS}(\id{occurByDelta}_{P,e_1,\Delta,e}\la \Events, \id{prec}, \id{state}\ra)
 \end{array}
 \label{req:recursive def SHS by Delta}
 \end{eqnarray}
-
-	At this point, let us reflect on storage.
-	If we store a stateful history structure entirely,
-	one state is added to the total storage requirement for every event in $\Events$.
-	However, if the average change is typically smaller than the average state, it can be more economical to store only the changes.
-	For this purpose we define an incremental history structure (IHS)
-	as a history structure that ``stores'' changes instead of states.
-	A {\em incremental history structure} is a quadruple $\la\Events, \id{prec}, \delta, \iota\ra$ in which
-	$\la \Events, \id{prec}\ra$ is a history structure,
-	$\delta(e_1,e_2)$ represents the change $\id{state}(e_2)\ominus\id{state}(e_1)$ for every pair $(e_1,e_2)\in\id{prec}$ (equation~\ref{def:delta}),
-	and $\iota(e)$ represents the change $\id{state}(e_1)\ominus\mathcal I$ for every event $e\in\Events$ that has no predecessor in $\id{prec}$.
-	Since histories are built event-by-event, we give an incremental definition.
-	The following mapping, $\id{increment}_{P,e_1,e,\Delta,\iota}$,
-	adds one event ($e$) to an IHS:
+	In practice, information systems build states incrementally.
+	Each event comes with an increment ($\Delta$) that changes the current state.
+	For this purpose we define an incremental history structure (IHS).
+	A {\em incremental history structure} is a quadruple $\la\Events, \id{prec}, \delta, \iota\ra$ in which:
+\begin{itemize}
+\item	$\la \Events, \id{prec}\ra$ is a history structure;
+\item	$\delta(e_1,e_2)$ represents a change, $\id{state}(e_2)\ominus\id{state}(e_1)$, for every pair $(e_1,e_2)\in\id{prec}$ (equation~\ref{def:delta});
+\item	$\iota(e)$ represents the change $\id{state}(e_1)\ominus\mathcal I$ for every event $e\in\Events$ that has no predecessor in $\id{prec}$.
+\end{itemize}
+	Since histories are built event-by-event, we define IHSs incrementally.
+	For that purpose we use the following mapping, $\id{increment}_{P,e_1,e,\Delta,\iota}$,
+	which adds one event ($e$) to an IHS:
 \begin{eqnarray}
-\begin{array}{l}
-	\id{increment}_{P,e_1,e,\Delta}\la\Events, \id{prec}, \delta, \iota\ra\\
-	\ \ =\ \begin{array}[t]{@{}l@{}c@{}ll}
+\begin{array}{l@{}l}
+	\multicolumn{2}{l}{\id{increment}_{P,e_1,e,\Delta}\la\Events, \id{prec}, \delta, \iota\ra}\\
+	\ \ =\ &\begin{array}[t]{@{}l@{\hspace{0.2cm}}c@{\hspace{0.2cm}}ll}
 		\text{Let }\delta'(x,y)&=&\Delta\text{, }&\text{if }x=e_1\wedge y=e\wedge x\in P\\
 				       &=&(\id{state}(e_1)\oplus\Delta)\ominus\id{state}(x)\text{, }&\text{if }x\neq e_1\wedge y=e\wedge x\in P\\
-				       &=&\delta(x,y)\text{, }&\text{if }(x,y)\in\id{prec}\\
-		\text{Let }\iota'(x)&=&\Delta\text{, }&\text{if }x=e\wedge e_1\notin P\\
-				    &=&\iota(x)\text{, }&\text{if }x\neq e\wedge e_1\notin P\\
-			\multicolumn{4}{@{}l}{\text{in }\la\Events\cup\{e\}, \id{prec}\cup\{(e_2,e)|e_2\in P\}, \delta', \iota'\}\ra}
-		\end{array}
+				       &=&\delta(x,y)\text{, }&\text{if }(x,y)\in\id{prec}
+		\end{array}\\
+		&\begin{array}[t]{@{}l@{\hspace{0.2cm}}c@{\hspace{0.2cm}}ll}
+			\text{Let }\iota'(x)&=&\Delta\text{, }&\text{if }x=e\wedge P=\emptyset\\
+				    &=&\iota(x)\text{, }&\text{if }x\neq e\wedge P=\emptyset
+		\end{array}\\
+		&\text{in }\la\Events\cup\{e\}, \id{prec}\cup\{(e_2,e)|e_2\in P\}, \delta', \iota'\}\ra
 \end{array}
 \label{req:increment}
 \end{eqnarray}
@@ -343,9 +375,75 @@ The following mapping transforms a stateful history structure to an incremental 
 	The\marginpar{claim} fact that $\id{shs2ihs}$ and $\id{ihs2shs}$ are each other's inverse proves that the choice to represent
 	history by an IHS or SHS can be made on practical grounds.
 
+	We must prove\marginpar{claim} that
+\begin{equation}
+	\id{ihs2shs}(\id{increment}_{P,e_1,e,\Delta}(\id{shs2ihs}(h)))\ =\ \id{occurs}_{P,e,\id{state}(e_1)\oplus\Delta}(h)
+\end{equation}
+
+\section{Isolation}
+\label{sct:Isolation}
+	How does a user perceive a distributed information system (DIS)?
+	There are different options.
+	An example is an information screen with flight arrival times in an airport,
+	where a user sees the current state of flight arrivals and sees it change each time a new event occurs.
+	This is an example of non-transactional use: the user consumes information passively.
+	However, the topic of this paper is transactional use,
+	an example of which is to make a flight reservation.
+	In that example, the user interacts with the system for the purpose of reserving a seat on a flight.
+	She sees a current state and provides events to the system by filling out fields in a reservation screen.
+	These events cause changes in the state (e.g.\ from {\em The flight is not paid} to {\em The flight has been paid}).
+	With this type of use, i.e transactional use, the user expects a predictable result.
+	That is: if the current state is $s$ and the user specifies a change $\Delta$,
+	the resulting state must be $s\oplus\Delta$.
+	This requirement is the incremental variant of requirement~\ref{req:transaction}:
+\begin{equation}
+	h'=\id{occurByDelta}_{P,e_1,\Delta,e}(h)\ \Rightarrow\ \id{state}(e)\ =\ \id{state}(e_1)\oplus\Delta
+\label{req:occurByDelta}
+\end{equation}
+	Since $\id{occurByDelta}$ preserves a stateful history structure (equation~\ref{req:recursive def SHS by Delta}),
+	the user can interact repeatedly with the system and update the state predictably in a sequence of changes.
+	This yields a user experience of being the only user of the system.
+	That property is called {\em isolation}.
+
+\section{Consistency}
+\label{sct:Consistency}
+	From a user perspective, {\em consistency} means that the system is free of contradictions.%
+\footnote{A user might have wanted the system to provide the truth itself,
+	but that is beyond what technical systems can guarantee. For people can feed the system with lies.
+	However, freedom of contradictions is quite desirable as second-best, because truth is free of contradictions.}
+	We require a predicate on states to determine whether a state is consistent.
+	So we extend the notion of stateful historic structure with that predicate.
+
+	A {\em nonconflicting history structure} is a quadruple $\la\Events, \id{prec}, \id{state}, \id{consistent}\ra$ in which
+	$\la \Events, \id{prec}, \id{state}\ra$ is a SHS and $\id{consistent}$ is a predicate on $\mathbb S$,
+	which holds for every state in the SHS.
+	We will use predicate $\id{NHS}$ as a definition:
+\begin{equation}
+\begin{array}{l@{}ll}
+	\multicolumn{3}{l}{\id{NHS}\la \Events, \id{prec}, \id{state}, \id{consistent}\ra}\\
+	\ \Leftrightarrow\ &\id{SHS}\la \Events, \id{prec}, \id{state}\ra&\wedge\\
+	&\id{consistent}\subseteq\mathbb S&\wedge\\
+	&\forall e\in\Events:\ \id{consistent}(\id{state}(e))&
+\end{array}
+\label{def:NHS}
+\end{equation}
+	Equation~\ref{def:NHS} defines a nonconflicting history structure:
+	For practical use, we require $\id{consistent}$ to be decidable.
+
 \section{Atomicity}
 \label{sct:Atomicity}
 	{\em Atomicity} guarantees all-or-nothing outcomes.
+	Let an example clarify this.
+	If I purchase a song on the internet, I must pay.
+	As a result, it is acceptable that the payment is done and the song is delivered.
+	It is also acceptable that the payment is not done and the song is not delivered.
+	However, it is unacceptable that the payment is done and the song is not delivered or vice-versa.
+
+	Consider this:
+	\[h'\ =\ \id{increment}_{P,e_2,e_3,\Delta_2}(\id{increment}_{P,e_1,e_2,\Delta_1}(h))\]
+	Imagine that $\Delta_1$ represents my payment and $\Delta_2$ represents the delivery of my song.
+	In the corresponding history structure, we will see that
+	\[\{(e_1,e_2), (e_2,e_3)\}\subseteq\id{prec} \]
 	It means that the overall state change caused by a sequence of events can be committed as a whole or rejected completely.
 
 	So let us first discuss event sequences.
@@ -354,7 +452,11 @@ The following mapping transforms a stateful history structure to an incremental 
 	that are totally ordered.
 	Typically, event sequences occur multiply in a history structure.
 
-
+\section{theorems}
+\label{sct:theorems}
+	An order theoretic meet-semilattice $\la S, \leq\ra$ gives rise to a binary operation $\oplus$ such that $\la S, \oplus\ra$ is an algebraic meet-semilattice.
+	With $\preceq$ being reflexive, antisymmetric, and transitive,
+	it follows immediately that $\oplus$ is idempotent, commutative, and associative.
 \section{Bibliography}
 \bibliographystyle{elsarticle-harv}
 \bibliography{doc}
@@ -362,7 +464,7 @@ The following mapping transforms a stateful history structure to an incremental 
 
 \end{document}
 
-	\section{Threads}
+\section{Threads}
 	So how does a stateful history structure represent a distributed information system?
 \marginpar{claim}
 	Part of the answer is that a substructure of a stateful history structure is a stateful history structure by itself.
@@ -450,20 +552,6 @@ The following mapping transforms a stateful history structure to an incremental 
 		it follows immediately that $\oplus$ is idempotent, commutative, and associative.
 	\end{itemize}
 
-\section{Consistency}
-\label{sct:Consistency}
-	{\em Consistency} means that integrity rules are warranted by the database management system.
-
-	If $s$ is a state and $r$ is an integrity rule, then $s\ \id{sat}\ r$ means that $s$ satisfies rule $r$
-	and $s\ \overline{\id{sat}}\ r$ means that $s$ does not satisfy rule $r$.
-
-	Let us call the set of integrity rules $\mathcal R$.
-	A state $s$ is called consistent if it satisfies every integrity rule $r\in\mathcal R$
-\begin{equation}
-	\id{consistent}(s)\ =\ \forall r\in\mathcal R: s\ \id{sat}\ r
-\end{equation}
-	The system is consistent if the initial state is consistent and it can only reach consistent states by means of atomic actions.
-	So all states in the history graph are consistent with $\mathcal R$.
 
 
 \section{Isolation}
@@ -487,7 +575,7 @@ The following mapping transforms a stateful history structure to an incremental 
 \label{sct:Consistency}
 Each user of a database issues a stream of events.
 	The order (in time) of events is given by a relation\footnote{%
-A relation $\declare{r}{A}{B}$ is a set of tuples. Each tuple $\pair{a}{b}$ in that set satisfies $a\in A$ and $b\in B$}
+A relation $\declare{r}{A}{B}$ is a set of pairs. Each pair $\pair{a}{b}$ in that set satisfies $a\in A$ and $b\in B$}
 	$\declare{pred}{Event}{Event}$,
 	where $\pair{e1}{e2}\in\id{pred}$ means that event $e1$ precedes event $e2$.
 	From a user perspective this stream is a sequence, so every event except the first has exactly one predecessor.
