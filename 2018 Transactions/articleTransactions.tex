@@ -122,10 +122,15 @@ relation algebra\sep software development\sep legal reasoning\sep information sy
 	All other events are called {\em current} events in that history structure.
 	Events in $\Events$ that have no preceding events are called {\em first} events.
 
-\section{Growth}
-\label{sct:Growth}
+	We extend the notion of subset to historic structures and use the subset symbol $\subseteq$ for that purpose.
+	Let us represent the fact that $h$ is a {\em historic substructure} of $h'$ by:
+\begin{equation}
+\label{def:historic substructure}
+	\la \Events, \id{prec}\ra\ \subseteq\ \la \Events', \id{prec}'\ra\ \Leftrightarrow\ \Events\subseteq\Events'\ \wedge\ \id{prec}\subseteq\id{prec}'
+\end{equation}
+
 	A DIS grows by adding events to it.
-	We describe each time an event $e$ happens as a mapping, $\id{happens}_{P,e}$, from one history structure to another:
+	We describe each time a new event $e$ happens as a mapping, $\id{happens}_{P,e}$, from one history structure to another:
 \begin{equation}
 \begin{array}{l}
 	P\subseteq\Events\ \wedge\ e\notin E\\
@@ -154,13 +159,7 @@ relation algebra\sep software development\sep legal reasoning\sep information sy
 	Similarly, $e\notin\Events$ is a necessary condition,
 	because any $e\in\Events$ violates the antisymmetry of $\id{prec}^+$ (requirement~\ref{req:precPlus asy}).
 
-	We extend the notion of subset to historic structures and use the subset symbol $\subseteq$ for that purpose.
-	Let us represent the fact that $h$ is a {\em historic substructure} of $h'$ by:
-\begin{equation}
-\label{def:historic substructure}
-	\la \Events, \id{prec}\ra\ \subseteq\ \la \Events', \id{prec}'\ra\ \Leftrightarrow\ \Events\subseteq\Events'\ \wedge\ \id{prec}\subseteq\id{prec}'
-\end{equation}
-	From lemma~\ref{lemma:happens preserves history structure} we can prove that $\id{happens}_{P,e}(h)=h'$ implies that $h\subseteq h'$.
+	With lemma~\ref{lemma:happens preserves history structure} we can prove that $\id{happens}_{P,e}(h)=h'$ implies that $h\subseteq h'$.
 
 	Let us define predicate $\id{HS}\la \Events, \id{prec}\ra$
 	to denote that $\la \Events, \id{prec}\ra$ is a history structure.
@@ -180,41 +179,28 @@ relation algebra\sep software development\sep legal reasoning\sep information sy
 	Note that $\id{happens}_{P,e}$ can make current events become past events.
 	If $h'=\id{happens}_{P,e}(h)$, every event in $P$ is a past event in $h'$ and event $e$ becomes current in $h'$.
 
-	Let us reconsider the relation $\id{prec}$ for a moment and define $\preceq$ as follows:
-	Requirement~\ref{req:precPlus asy} from section~\ref{sct:History} ensures that $\preceq$ is reflexive, antisymmetric, and transitive.
-	Let us introduce operator $\curlyvee$ (the {\em meet} of two events)
-\begin{equation}
-	e\ =\ e_1\curlyvee e_2\ \ \Leftrightarrow\ \ e\ \preceq\ e_1\ \wedge\ e\ \preceq\ e_2
-\end{equation}
-	If $\la \Events, \id{prec}, \id{state}\ra$ satisfies definition~\ref{req:recursive def occurs},
-	we can prove
-\begin{equation}
-		e_1,e_2\in\Events\ \Rightarrow\ (e_1\curlyvee e_2)\in\Events
-\end{equation}
-	This means that $\la\Events,\preceq\ra$ is an order-theoretic meet-semilattice.
-	From order theory, we know that $\curlyvee$ is idempotent, commutative, and associative.
-
-
-	Having defined history structures and the way they grow, let us proceed to determine requirements for states.
-
 \section{States}
 	This section defines the requirements for predictable behavior of a distributed information system (DIS).
 	We consider behavior to be predictable if every state can be computed unambiguously from its history.
 	For that purpose we introduce the notion of state.
-
-	A history structure can be perceived as the (global) state of an information system at any point in time,
-	even though that global state is observable only in its local parts.
-
 	Let $\mathbb S$ represent the set of all conceivable states.
-	A {\em stateful history structure} is a triple $\la\Events, \id{prec}, \id{state}\ra$ in which
+
+	This section expands history structures to stateful history substructures
+	to represent the (global) state of an information system at any point in time.
+	Since this paper is about distributed systems,
+	we may not assume that the global state of a DIS at some point in time is observable.
+	The state of a DIS is observable only in its local parts.
+	So we shall define multiple states, each of which may be interpreted locally.
+
+	We define a {\em stateful history structure} as a triple $\la\Events, \id{prec}, \id{state}\ra$ in which
 	$\la \Events, \id{prec}\ra$ is a history structure and $\id{state}:\Events\rightarrow{\mathbb S}$ is a function
 	that maps every event in $\Events$ to a state.
 	We will use predicate $\id{SHS}\la \Events, \id{prec}, \id{state}\ra$
 	to express that $\la \Events, \id{prec}, \id{state}\ra$ is a stateful history structure.
 	Let $s=\id{state}(e)$ represent the fact that $s$ is the state immediately after event $e$ has happened.
 	Or shorter: $s$ is the state after event $e$.
-	Instead of $s=\id{state}(e)$, we may also write $(s,e)\in\id{state}$ because a function is a univalent and total relation
-	(and therefore a set of pairs).
+%	Instead of $s=\id{state}(e)$, we may also write $(s,e)\in\id{state}$ because a function is a univalent and total relation
+%	(and therefore a set of pairs).
 	A {\em current state} is the state after a current event
 	and a {\em past state} is the state after a past event.
 
@@ -223,10 +209,18 @@ relation algebra\sep software development\sep legal reasoning\sep information sy
 	So we define the occurrence of an event as a mapping, $\id{occurs}_{P,e,s}$, from one SHS to another SHS:
 \begin{equation}
 \begin{array}{l}
-	\id{occurs}_{P,e,s}(\la \Events, \id{prec}, \id{state}\ra)\\
-	\ =\ \la \Events\cup\{e\},\ \id{prec}\cup\{(e_1,e) | e_1\in P\},\ \id{state}\cup\{(e,s)\}\ra
-\end{array}	
-\label{eqn:def occurs}
+	P\subseteq\Events\ \wedge\ e\notin E\\
+	\ \ \Rightarrow\ \ 
+\begin{array}[t]{l}
+	\id{occurs}_{P,e,s}(\la\Events, \id{prec}, \id{state}\ra)\\
+	\ \ =\ \begin{array}[t]{@{}l@{\hspace{.2em}}c@{\hspace{.2em}}ll}
+		\text{Let }\id{newState}(x)&=&s\text{,}&\text{if }x=e\\
+				&=&\id{state}(x)\text{,}&\text{otherwise}\\
+		\multicolumn{4}{@{}l}{\text{in }\la\Events\cup\{e\}, \id{prec}\cup\{(e_2,e)|e_2\in P\}, \id{newState}\}\ra}
+		\end{array}
+\end{array}
+\end{array}
+\label{req:def occurs}
 \end{equation}
 	This definition extends the definition of $\id{happens}$ (eqn.~\ref{req:def happens}).
 	By using lemma~\ref{lemma:happens preserves history structure} we can prove that $\id{occurs}_{P,e,s}$ preserves
@@ -256,23 +250,9 @@ relation algebra\sep software development\sep legal reasoning\sep information sy
 	s_2\ =\ s_1\oplus(s_2\ominus s_1)
 \label{req:oplus and ominus}
 \end{equation}
-	Let us call $s_2\ominus s_1$ the difference between states $s_2$ and $s_1$.
-	This difference represents a change.
+	Let us call $s_2\ominus s_1$ the difference ($\Delta$) between states $s_2$ and $s_1$.
 	We use $s_1\oplus\Delta$ to compute a new state from an existing state $s_1$ and a change $\Delta$.
-	In a stateful history structure we can represent transactions by means of a function $\delta$,
-	where $\delta(e_1,e_2)$ represents the change of state from event $e_1$ to $e_2$.
-\begin{equation}
-	\delta(e_1,e_2)\ =\ \id{state}(e_2)\ominus\id{state}(e_1)
-\label{def:delta}
-\end{equation}
-	A transaction caused by event $e$ can be described by:
-\begin{eqnarray}
-&&	h'=\id{occurs}_{P,e,s}(h)\ \Rightarrow\ \begin{array}[t]{@{}ll}
-		\id{state}(e)\ =\ s&\wedge\\
-		\forall e_1\in P: s\ =\ \id{state}(e_1)\oplus\delta(e_1,e)
-	\end{array}
-\label{req:transaction}
-\end{eqnarray}
+
 	We can define a stateful history structure,
 	in which the state after every event is computed from a change, $\Delta$.
 	For this purpose we must designate one specific state, $\mathcal I\in\mathbb S$, as the initial state.
@@ -282,10 +262,12 @@ relation algebra\sep software development\sep legal reasoning\sep information sy
 \begin{eqnarray}
 &&\begin{array}{l}
 	\id{occurByDelta}_{P,e_1,\Delta,e}(\la\Events, \id{prec}, \id{state}\ra)\\
-	\ \ =\ \begin{array}[t]{@{}l@{}c@{}ll}
+	\ \ =\ \begin{array}[t]{@{}l@{\hspace{.2em}}c@{\hspace{.2em}}ll}
 		\text{Let }s_1&=&\id{state}(e_1)\text{,}&\text{if }e_1\in P\\
 				&=&\mathcal I\text{,}&\text{otherwise}\\
-		\multicolumn{4}{@{}l}{\text{in }\la\Events\cup\{e\}, \id{prec}\cup\{(e_2,e)|e_2\in P\}, \id{state}\cup\{(e,s_1\oplus\Delta)\}\ra}
+		\text{Let }\id{newState}(x)&=&s_1\text{,}&\text{if }x=e\\
+		&=&\id{state}(x)\text{,}&\text{otherwise}\\
+		\multicolumn{4}{@{}l}{\text{in }\la\Events\cup\{e\}, \id{prec}\cup\{(e_2,e)|e_2\in P\}, \id{newState}\}\ra}
 		\end{array}
 \end{array}
 \label{req:SHS by Delta}
@@ -305,7 +287,7 @@ relation algebra\sep software development\sep legal reasoning\sep information sy
 	A {\em incremental history structure} is a quadruple $\la\Events, \id{prec}, \delta, \iota\ra$ in which:
 \begin{itemize}
 \item	$\la \Events, \id{prec}\ra$ is a history structure;
-\item	$\delta(e_1,e_2)$ represents a change, $\id{state}(e_2)\ominus\id{state}(e_1)$, for every pair $(e_1,e_2)\in\id{prec}$ (equation~\ref{def:delta});
+\item	$\delta(e_1,e_2)$ represents a change, $\id{state}(e_2)\ominus\id{state}(e_1)$, for every pair $(e_1,e_2)\in\id{prec}$;
 \item	$\iota(e)$ represents the change $\id{state}(e_1)\ominus\mathcal I$ for every event $e\in\Events$ that has no predecessor in $\id{prec}$.
 \end{itemize}
 	Since histories are built event-by-event, we define IHSs incrementally.
@@ -452,11 +434,14 @@ The following mapping transforms a stateful history structure to an incremental 
 	that are totally ordered.
 	Typically, event sequences occur multiply in a history structure.
 
-\section{theorems}
-\label{sct:theorems}
-	An order theoretic meet-semilattice $\la S, \leq\ra$ gives rise to a binary operation $\oplus$ such that $\la S, \oplus\ra$ is an algebraic meet-semilattice.
-	With $\preceq$ being reflexive, antisymmetric, and transitive,
-	it follows immediately that $\oplus$ is idempotent, commutative, and associative.
+\section{Durability}
+\label{sct:Durability}
+	In the eyes of the user, durability means that history is not changed.
+	In the previous definitions durability has been secured by defining every change as an expansion of an existing system.
+	Events are added only. Once added they are never removed or replaced.
+	This corresponds to working practices in financial ledgers.
+	Transactions are never removed, only compensated.
+
 \section{Bibliography}
 \bibliographystyle{elsarticle-harv}
 \bibliography{doc}
