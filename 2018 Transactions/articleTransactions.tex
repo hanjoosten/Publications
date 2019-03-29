@@ -72,12 +72,26 @@ relation algebra\sep software development\sep legal reasoning\sep information sy
 	{\em Consistency} means that integrity rules are warranted by the database management system.
 	{\em Isolation} means that actions can be done without any knowledge of what other users are doing simultaneously.
 	{\em Durability} means that the contents of a database cannot change unintendedly.
-	To motivate this theory, let us formulate requirements to characterize a DIS:
 
 \section{Related work}
 \label{sct:Related work}
+	In 2017, Simon Foster et al. published a theory of time with generalised reactive processes~\cite{DBLP:journals/ipl/FosterCWZ18}.
+	It provides a generic foundation for denotational semantics of concurrent languages,
+	the proof obligation of which are satisfied by automated verification~\cite{Foster14}.
+	Their theory describes program behaviour as relational predicates whose variables correspond to observable quantities.
+	It draws on the seminal work of Hoare on communicating sequential processes~\cite{HoareHe98},
+	work on process algebras by Bergstra and Klop~\cite{DBLP:journals/iandc/BergstraK84}, and
+	Robin Milner's work on CCS~\cite{Milner1989}.
+	We chose to build our theory on the work of Foster et al. because it provides three healthiness conditions
+	that theories of time must adhere to,
+	ready for us to adopt.
+	In the same style we have tried to keep our theory down to the bare minimum, to make it as generally applicable as possible.
+	We too have used Isabelle to verify the required proofs,
+	to increase our confidence in this theory.
+	
 \cite{Foster17c}
-
+	In the nineties, scientists saw that category theory can be used to formalize database schemas~\cite{Frederiks1997},
+	which was advocated as a means to further foundational theories of information systems.
 	An interesting read is~\cite{Foster17c}\footnote{\tt\tiny https://towardsdatascience.com/distributed-transactions-and-why-you-should-care-116b6da8d72}.
 	It explains how modern distributed database cope with ACID properties in a way that makes sense.
 
@@ -87,6 +101,9 @@ relation algebra\sep software development\sep legal reasoning\sep information sy
 \label{sct:History}
 	Distributed information systems are dynamic systems,
 	so time is the first aspect we focus on.
+	Being distributed means that we cannot assume that the temporal order of events is known in all cases.
+	For this reason we draw on a theory of concurrency, which is generally applicable,
+	well-established, and founded in a solid mathematical structure~\cite{Foster14}.
 	In this paper we simplify the notion of time to precedence of events,
 	allowing us to study the evolution over time by events that happen.
 	We need the notion of {\em event}\footnote{Cambridge Dictionary defines ``event'' as: anything that happens} to describe things that happen in a DIS.
@@ -96,14 +113,16 @@ relation algebra\sep software development\sep legal reasoning\sep information sy
 	to represent all events that have happend up to some point in time and the precedences between those events.
 	In this paper, variables $h$, $h'$, $h_1$, and $h_2$ represent history structures.
 	Let $\mathbb H$ be the set of all conceivable history structures.
+	We describe the history structure of a DIS as a partial order of events
+
 	A {\em history structure} is a tuple $\la \Events, \id{prec}\ra$ in which
 \begin{eqnarray}
 	&&\id{prec}\ \subseteq\ \Events\times\Events\label{req:precInE}\\
 	&&(e,e)\notin\id{prec}\label{req:prec irreflexive}\\
 	&&(e_1,e_2)\in\id{prec}^+\ \wedge\ (e_2,e_1)\in\id{prec}^+\ \Rightarrow\ e_1=e_2\label{req:precPlus asy}
 \end{eqnarray}
-	Let set $\Events$ represent all events that the DIS has registered up to some point in time.
-	So for every event $e\in\Events$ we can say that it has happened (at some time in the past).
+	In a history structure $\la \Events, \id{prec}\ra$ set $\Events$ represents the events that have been registered up to some point in time.
+	For every event $e\in\Events$ we can say that it has happened (at some time in the past).
 	Let $e_1\ \id{prec}\ e_2$ represent the fact that event $e_1$ has happened before event $e_2$,
 	making $\id{prec}$ a relation on events in $\Events$.
 	Requirement~\ref{req:prec irreflexive} excludes the situation that $e$ has happened before itself.
@@ -123,7 +142,7 @@ relation algebra\sep software development\sep legal reasoning\sep information sy
 	Events in $\Events$ that have no preceding events are called {\em first} events.
 
 	We extend the notion of subset to historic structures and use the subset symbol $\subseteq$ for that purpose.
-	Let us represent the fact that $h$ is a {\em historic substructure} of $h'$ by:
+	We call this a {\em historic substructure}, which is defined by:
 \begin{equation}
 \label{def:historic substructure}
 	\la \Events, \id{prec}\ra\ \subseteq\ \la \Events', \id{prec}'\ra\ \Leftrightarrow\ \Events\subseteq\Events'\ \wedge\ \id{prec}\subseteq\id{prec}'
