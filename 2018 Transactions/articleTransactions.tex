@@ -58,20 +58,25 @@ relation algebra\sep software development\sep legal reasoning\sep information sy
 	Globally distributed applications such as Netflix and LinkedIn cannot afford to rely on a shared database for obvious reasons of performance and reliability.
 	Many cloud applications use distributed storage models instead.
 	Examples are event stores (e.g.\ Kafka), triple stores (e.g.\ semantic web), graph databases (e.g. Neo4J) and others.
-	These so-called NoSQL databases often lack functionality for transactions.
-	For the purpose of doing transactions in a non-transactional situation, several architectural patterns exist.
+	These so-called NoSQL databases often lack functionality for transactions,
+	leaving the problems for the user to solve.
+	As a result, many architectural patterns exist for the purpose of doing transactions in a distributed setting.
 	Some of these patterns simply circumvent the problem.
 	Others will isolate transactionality into a smaller sub-problem.
 	Still others introduce locking mechanisms to do the job.
-	Yet, in the world of event-driven distributed systems, a dire need is felt for a theory that brings what transactions do for shared databases.
+	In paper we will show that the ACID-properties of transactions follow quite naturally from the theory of time.
+	In informal terms: the merge of Git corresponds to the transactional commit in databases.
+	This result contributes to the body of foundational theory of information systems.
 	
-	This paper presents such a theory.
-	It describes transactions without the assumption of a shared database.
-	In this theory we express the characteristic properties of transactions: Atomicity, Consistency, Isolation, and Durability.
+	This paper describes transactions without the assumption of a shared database.
+	In we express the characteristic properties of transactions: Atomicity, Consistency, Isolation, and Durability.
 	{\em Atomicity} means that a sequence of primitive actions can be executed as though it were a single action.
 	{\em Consistency} means that integrity rules are warranted by the database management system.
 	{\em Isolation} means that actions can be done without any knowledge of what other users are doing simultaneously.
 	{\em Durability} means that the contents of a database cannot change unintendedly.
+	For this purpose we build on a well-known theory of time~\cite{DBLP:journals/ipl/FosterCWZ18},
+	which is generally applicable,
+	well-established, and founded in a solid mathematical structure~\cite{Foster14}.
 
 \section{Related work}
 \label{sct:Related work}
@@ -102,8 +107,6 @@ relation algebra\sep software development\sep legal reasoning\sep information sy
 	Distributed information systems are dynamic systems,
 	so time is the first aspect we focus on.
 	Being distributed means that we cannot assume that the temporal order of events is known in all cases.
-	For this reason we draw on a theory of concurrency, which is generally applicable,
-	well-established, and founded in a solid mathematical structure~\cite{Foster14}.
 	In this paper we simplify the notion of time to precedence of events,
 	allowing us to study the evolution over time by events that happen.
 	We need the notion of {\em event}\footnote{Cambridge Dictionary defines ``event'' as: anything that happens} to describe things that happen in a DIS.
